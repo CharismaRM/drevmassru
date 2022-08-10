@@ -776,14 +776,128 @@ body::after {
           transform: rotate(45deg);
 }
 
+.footer {
+  margin: 180px 0px 0px 0px;
+  background: #3B3B40;
+  padding: 80px 0px;
+}
+
+.footer__body {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  row-gap: 86px;
+}
+
+.footer__items {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 80px;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+}
+
+.footer__item {
+  -webkit-box-flex: 0;
+      -ms-flex: 0 1 19%;
+          flex: 0 1 19%;
+}
+
+.footer__text {
+  font-family: "Rubik";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 18px;
+  color: #EFEEF2;
+  margin: 24px 0px 0px 0px;
+}
+
+.footer__list {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 4px;
+}
+
+.footer__link {
+  font-family: "Rubik";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 28px;
+  color: #EFEEF2;
+}
+
+.footer__number {
+  font-family: "Rubik";
+  font-style: normal;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 118%;
+  color: #F9F9F9;
+}
+
+.footer__call {
+  font-family: "Rubik";
+  font-style: normal;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 16px;
+  color: #FA5C5C;
+  text-decoration: underline;
+}
+
+.footer__info {
+  font-family: "Rubik";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 18px;
+  color: #9F9EA4;
+  width: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.footer__info a {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.sociales {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 16px;
+  margin: 24px 0px 0px 0px;
+}
+
 .page__main-block {
   padding: 122px 0px 300px 0px;
 }
 
-.no-webp .main-block{
-  background: url("../img/main-block/girl.png") no-repeat; }
-
 .main-block {
+  background: url("../img/main-block/girl.png") no-repeat;
   background-position: bottom 50px right 25%;
 }
 
@@ -1016,11 +1130,9 @@ body::after {
   color: #5F5F67;
 }
 
-.no-webp .page__support{
-  background: url("../img/supprot/imageonejpg.jpg") 0 100% no-repeat; }
-
 .page__support {
   margin: 100px 0px 0px 0px;
+  background: url("../img/supprot/imageone.jpg") 0 100% no-repeat;
   padding: 0px 0px 400px 0px;
 }
 
@@ -1195,11 +1307,9 @@ body::after {
           flex: 0 1 59%;
 }
 
-.no-webp .page__easy-life{
-  background: url("../img/easylife/bg.jpg") center center/cover no-repeat; }
-
 .page__easy-life {
   position: relative;
+  background: url("../img/easylife/bg.jpg") center center/cover no-repeat;
 }
 
 @supports (padding-top: clamp( 10.4375rem , 7.1439439141rem  +  16.4677804296vw , 19.0625rem )) {
@@ -1332,12 +1442,10 @@ body::after {
   gap: 24px;
 }
 
-.no-webp .forhealth__item{
-  background-image: url("../img/forhealth/shape1.png"); }
-
 .forhealth__item {
   padding: 36px 300px 100px 36px;
   background-color: #00B1AA;
+  background-image: url("../img/forhealth/shape1.png");
   background-position: 100% 50%;
   background-repeat: no-repeat;
   -webkit-box-flex: 0;
@@ -1362,8 +1470,9 @@ body::after {
   z-index: 0;
 }
 
-.no-webp .forhealth__item:nth-child(2){
-  background-image: url("../img/forhealth/shape2.png"); }
+.forhealth__item:nth-child(2) {
+  background-image: url("../img/forhealth/shape2.png");
+}
 
 .forhealth__item:nth-child(2)::before {
   content: url("../img/forhealth/obj4.png");
@@ -1371,8 +1480,9 @@ body::after {
   right: -30%;
 }
 
-.no-webp .forhealth__item:nth-child(3){
-  background-image: url("../img/forhealth/shape3.png"); }
+.forhealth__item:nth-child(3) {
+  background-image: url("../img/forhealth/shape3.png");
+}
 
 .forhealth__item:nth-child(3)::before {
   content: url("../img/forhealth/obj3.png");
@@ -1380,8 +1490,9 @@ body::after {
   right: 0%;
 }
 
-.no-webp .forhealth__item:nth-child(4){
-  background-image: url("../img/forhealth/shape4.png"); }
+.forhealth__item:nth-child(4) {
+  background-image: url("../img/forhealth/shape4.png");
+}
 
 .forhealth__item:nth-child(4)::before {
   content: url("../img/forhealth/obj2.png");
@@ -2293,10 +2404,8 @@ body::after {
   width: 100%;
 }
 
-.no-webp .page__care{
-  background: url("../img/care/bgjpg.jpg") center/cover no-repeat; }
-
 .page__care {
+  background: url("../img/care/bgjpg.jpg") center/cover no-repeat;
   padding: 145px 0px;
 }
 
@@ -2379,11 +2488,9 @@ body::after {
   display: none;
 }
 
-.no-webp .page__whyitswork{
-  background: url("../img/whyitswork/bg.jpg") 100% 50% no-repeat; }
-
 .page__whyitswork {
   padding: 180px 0px 0px 0px;
+  background: url("../img/whyitswork/bg.jpg") 100% 50% no-repeat;
 }
 
 .whyitswork__body {
@@ -3420,6 +3527,17 @@ body::after {
     font-size: 15px;
   }
 
+  .footer {
+    margin: 80px 0px 0px 0px;
+  }
+
+  .footer__info {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+  }
+
   .main-block {
     background-position: bottom 0px right 80%;
   }
@@ -4025,21 +4143,3 @@ body::after {
     bottom: 30%;
   }
 }
-
-.webp .main-block{ background: url(../img/main-block/girl.webp) no-repeat; }
-
-.webp .page__support{ background: url(../img/supprot/imageonejpg.webp) 0 100% no-repeat; }
-
-.webp .page__easy-life{ background: url(../img/easylife/bg.webp) center center/cover no-repeat; }
-
-.webp .forhealth__item{ background-image: url(../img/forhealth/shape1.webp); }
-
-.webp .forhealth__item:nth-child(2){ background-image: url(../img/forhealth/shape2.webp); }
-
-.webp .forhealth__item:nth-child(3){ background-image: url(../img/forhealth/shape3.webp); }
-
-.webp .forhealth__item:nth-child(4){ background-image: url(../img/forhealth/shape4.webp); }
-
-.webp .page__care{ background: url(../img/care/bgjpg.webp) center/cover no-repeat; }
-
-.webp .page__whyitswork{ background: url(../img/whyitswork/bg.webp) 100% 50% no-repeat; }
