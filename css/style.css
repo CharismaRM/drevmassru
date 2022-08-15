@@ -5046,6 +5046,10 @@ button.swiper-pagination-bullet {
     padding: 40px 0px 0px 0px;
   }
 
+  .whyitswork__poligon {
+    display: none;
+  }
+
   .whyitswork__bg {
     padding: 40px 0px 0px 0px;
     display: none;
