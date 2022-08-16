@@ -1295,12 +1295,24 @@ body::after {
   -webkit-box-pack: justify;
       -ms-flex-pack: justify;
           justify-content: space-between;
+  position: relative;
+  padding-top: 50px;
 }
 
-.forall__image {
+.forall__poligon {
+  padding: 5px;
+  position: absolute;
+  top: 0;
+  left: -10%;
+  bottom: 0;
+  width: 80%;
   -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
           clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   background: #F9F9F9;
+  z-index: -1;
+}
+
+.forall__image {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
@@ -1446,7 +1458,8 @@ body::after {
 }
 
 .page__benefits {
-  margin: 60px 0px 0px 0px;
+  padding: 60px 0px 60px 0px;
+  background: #F9F9F9;
 }
 
 .benefits__items {
@@ -2202,7 +2215,7 @@ body::after {
 }
 
 .page__personale {
-  padding: 140px 0px 0px 0px;
+  padding: 140px 0px 140px 0px;
   background: #F9F9F9;
 }
 
@@ -2841,6 +2854,7 @@ body::after {
   font-size: 24px;
   line-height: 136%;
   color: #3B3B40;
+  margin: 0px 0px 64px 0px;
 }
 
 .youtube__videos {
@@ -3256,7 +3270,8 @@ body::after {
 }
 
 .page__return {
-  margin: 140px 0px 0px 0px;
+  background: #F9F9F9;
+  padding: 140px 0px 140px 0px;
 }
 
 .return__body {
@@ -3859,7 +3874,7 @@ body::after {
 .swiper-button-next,
 .swiper-rtl .swiper-button-prev {
   right: 10px;
-  left: auto;
+  left: 50%;
 }
 
 .swiper-button-next:after,
@@ -4461,6 +4476,11 @@ button.swiper-pagination-bullet {
     background: none;
   }
 
+  .whyitswork__bg {
+    padding: 40px 0px 0px 0px;
+    display: none;
+  }
+
   .whyitswork__content {
     width: 100%;
   }
@@ -4470,7 +4490,10 @@ button.swiper-pagination-bullet {
   }
 
   .whyitswork__image img {
-    width: 100%;
+    width: 150%;
+    -webkit-transform: translate(-15%, 0px);
+        -ms-transform: translate(-15%, 0px);
+            transform: translate(-15%, 0px);
   }
 
   .whyitswork__spoilers {
@@ -4931,7 +4954,7 @@ button.swiper-pagination-bullet {
   }
 
   .page__personale {
-    padding: 60px 0px 0px 0px;
+    padding: 60px 0px 60px 0px;
   }
 
   .personale__body {
@@ -5050,11 +5073,6 @@ button.swiper-pagination-bullet {
     display: none;
   }
 
-  .whyitswork__bg {
-    padding: 40px 0px 0px 0px;
-    display: none;
-  }
-
   .whyitswork__description {
     font-size: 18px;
     line-height: 140%;
@@ -5080,6 +5098,7 @@ button.swiper-pagination-bullet {
   .youtube__text {
     font-size: 18px;
     line-height: 140%;
+    margin: 0px 0px 24px 0px;
   }
 
   .youtube .content {
@@ -5201,7 +5220,7 @@ button.swiper-pagination-bullet {
   }
 
   .page__return {
-    margin: 60px 0px 0px 0px;
+    padding: 60px 0px 60px 0px;
   }
 
   .return__title {
