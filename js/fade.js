@@ -1,841 +1,18 @@
 (() => {
     "use strict";
-    const modules_flsModules = {};
     function isWebp() {
         function testWebP(callback) {
             let webP = new Image;
-            webP.onload = webP.onerror = function () {
+            webP.onload = webP.onerror = function() {
                 callback(2 == webP.height);
             };
             webP.src = "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA";
         }
-        testWebP((function (support) {
+        testWebP((function(support) {
             let className = true === support ? "webp" : "no-webp";
             document.documentElement.classList.add(className);
         }));
     }
-    function getHash() {
-        if (location.hash) return location.hash.replace("#", "");
-    }
-    function setHash(hash) {
-        hash = hash ? `#${hash}` : window.location.href.split("#")[0];
-        history.pushState("", "", hash);
-    }
-    let _slideUp = (target, duration = 500, showmore = 0) => {
-        if (!target.classList.contains("_slide")) {
-            target.classList.add("_slide");
-            target.style.transitionProperty = "height, margin, padding";
-            target.style.transitionDuration = duration + "ms";
-            target.style.height = `${target.offsetHeight}px`;
-            target.offsetHeight;
-            target.style.overflow = "hidden";
-            target.style.height = showmore ? `${showmore}px` : `0px`;
-            target.style.paddingTop = 0;
-            target.style.paddingBottom = 0;
-            target.style.marginTop = 0;
-            target.style.marginBottom = 0;
-            window.setTimeout((() => {
-                target.hidden = !showmore ? true : false;
-                !showmore ? target.style.removeProperty("height") : null;
-                target.style.removeProperty("padding-top");
-                target.style.removeProperty("padding-bottom");
-                target.style.removeProperty("margin-top");
-                target.style.removeProperty("margin-bottom");
-                !showmore ? target.style.removeProperty("overflow") : null;
-                target.style.removeProperty("transition-duration");
-                target.style.removeProperty("transition-property");
-                target.classList.remove("_slide");
-                document.dispatchEvent(new CustomEvent("slideUpDone", {
-                    detail: {
-                        target
-                    }
-                }));
-            }), duration);
-        }
-    };
-    let _slideDown = (target, duration = 500, showmore = 0) => {
-        if (!target.classList.contains("_slide")) {
-            target.classList.add("_slide");
-            target.hidden = target.hidden ? false : null;
-            showmore ? target.style.removeProperty("height") : null;
-            let height = target.offsetHeight;
-            target.style.overflow = "hidden";
-            target.style.height = showmore ? `${showmore}px` : `0px`;
-            target.style.paddingTop = 0;
-            target.style.paddingBottom = 0;
-            target.style.marginTop = 0;
-            target.style.marginBottom = 0;
-            target.offsetHeight;
-            target.style.transitionProperty = "height, margin, padding";
-            target.style.transitionDuration = duration + "ms";
-            target.style.height = height + "px";
-            target.style.removeProperty("padding-top");
-            target.style.removeProperty("padding-bottom");
-            target.style.removeProperty("margin-top");
-            target.style.removeProperty("margin-bottom");
-            window.setTimeout((() => {
-                target.style.removeProperty("height");
-                target.style.removeProperty("overflow");
-                target.style.removeProperty("transition-duration");
-                target.style.removeProperty("transition-property");
-                target.classList.remove("_slide");
-                document.dispatchEvent(new CustomEvent("slideDownDone", {
-                    detail: {
-                        target
-                    }
-                }));
-            }), duration);
-        }
-    };
-    let _slideToggle = (target, duration = 500) => {
-        if (target.hidden) return _slideDown(target, duration); else return _slideUp(target, duration);
-    };
-    let bodyLockStatus = true;
-    let bodyUnlock = (delay = 500) => {
-        let body = document.querySelector("body");
-        if (bodyLockStatus) {
-            let lock_padding = document.querySelectorAll("[data-lp]");
-            setTimeout((() => {
-                for (let index = 0; index < lock_padding.length; index++) {
-                    const el = lock_padding[index];
-                    el.style.paddingRight = "0px";
-                }
-                body.style.paddingRight = "0px";
-                document.documentElement.classList.remove("lock");
-            }), delay);
-            bodyLockStatus = false;
-            setTimeout((function () {
-                bodyLockStatus = true;
-            }), delay);
-        }
-    };
-    let bodyLock = (delay = 500) => {
-        let body = document.querySelector("body");
-        if (bodyLockStatus) {
-            let lock_padding = document.querySelectorAll("[data-lp]");
-            for (let index = 0; index < lock_padding.length; index++) {
-                const el = lock_padding[index];
-                el.style.paddingRight = window.innerWidth - document.querySelector(".wrapper").offsetWidth + "px";
-            }
-            body.style.paddingRight = window.innerWidth - document.querySelector(".wrapper").offsetWidth + "px";
-            document.documentElement.classList.add("lock");
-            bodyLockStatus = false;
-            setTimeout((function () {
-                bodyLockStatus = true;
-            }), delay);
-        }
-    };
-    function spollers() {
-        const spollersArray = document.querySelectorAll("[data-spollers]");
-        if (spollersArray.length > 0) {
-            const spollersRegular = Array.from(spollersArray).filter((function (item, index, self) {
-                return !item.dataset.spollers.split(",")[0];
-            }));
-            if (spollersRegular.length) initSpollers(spollersRegular);
-            let mdQueriesArray = dataMediaQueries(spollersArray, "spollers");
-            if (mdQueriesArray && mdQueriesArray.length) mdQueriesArray.forEach((mdQueriesItem => {
-                mdQueriesItem.matchMedia.addEventListener("change", (function () {
-                    initSpollers(mdQueriesItem.itemsArray, mdQueriesItem.matchMedia);
-                }));
-                initSpollers(mdQueriesItem.itemsArray, mdQueriesItem.matchMedia);
-            }));
-            function initSpollers(spollersArray, matchMedia = false) {
-                spollersArray.forEach((spollersBlock => {
-                    spollersBlock = matchMedia ? spollersBlock.item : spollersBlock;
-                    if (matchMedia.matches || !matchMedia) {
-                        spollersBlock.classList.add("_spoller-init");
-                        initSpollerBody(spollersBlock);
-                        spollersBlock.addEventListener("click", setSpollerAction);
-                    } else {
-                        spollersBlock.classList.remove("_spoller-init");
-                        initSpollerBody(spollersBlock, false);
-                        spollersBlock.removeEventListener("click", setSpollerAction);
-                    }
-                }));
-            }
-            function initSpollerBody(spollersBlock, hideSpollerBody = true) {
-                let spollerTitles = spollersBlock.querySelectorAll("[data-spoller]");
-                if (spollerTitles.length) {
-                    spollerTitles = Array.from(spollerTitles).filter((item => item.closest("[data-spollers]") === spollersBlock));
-                    spollerTitles.forEach((spollerTitle => {
-                        if (hideSpollerBody) {
-                            spollerTitle.removeAttribute("tabindex");
-                            if (!spollerTitle.classList.contains("_spoller-active")) spollerTitle.nextElementSibling.hidden = true;
-                        } else {
-                            spollerTitle.setAttribute("tabindex", "-1");
-                            spollerTitle.nextElementSibling.hidden = false;
-                        }
-                    }));
-                }
-            }
-            function setSpollerAction(e) {
-                const el = e.target;
-                if (el.closest("[data-spoller]")) {
-                    const spollerTitle = el.closest("[data-spoller]");
-                    const spollersBlock = spollerTitle.closest("[data-spollers]");
-                    const oneSpoller = spollersBlock.hasAttribute("data-one-spoller");
-                    const spollerSpeed = spollersBlock.dataset.spollersSpeed ? parseInt(spollersBlock.dataset.spollersSpeed) : 500;
-                    if (!spollersBlock.querySelectorAll("._slide").length) {
-                        if (oneSpoller && !spollerTitle.classList.contains("_spoller-active")) hideSpollersBody(spollersBlock);
-                        spollerTitle.classList.toggle("_spoller-active");
-                        _slideToggle(spollerTitle.nextElementSibling, spollerSpeed);
-                    }
-                    e.preventDefault();
-                }
-            }
-            function hideSpollersBody(spollersBlock) {
-                const spollerActiveTitle = spollersBlock.querySelector("[data-spoller]._spoller-active");
-                const spollerSpeed = spollersBlock.dataset.spollersSpeed ? parseInt(spollersBlock.dataset.spollersSpeed) : 500;
-                if (spollerActiveTitle && !spollersBlock.querySelectorAll("._slide").length) {
-                    spollerActiveTitle.classList.remove("_spoller-active");
-                    _slideUp(spollerActiveTitle.nextElementSibling, spollerSpeed);
-                }
-            }
-            const spollersClose = document.querySelectorAll("[data-spoller-close]");
-            if (spollersClose.length) document.addEventListener("click", (function (e) {
-                const el = e.target;
-                if (!el.closest("[data-spollers]")) spollersClose.forEach((spollerClose => {
-                    const spollersBlock = spollerClose.closest("[data-spollers]");
-                    const spollerSpeed = spollersBlock.dataset.spollersSpeed ? parseInt(spollersBlock.dataset.spollersSpeed) : 500;
-                    spollerClose.classList.remove("_spoller-active");
-                    _slideUp(spollerClose.nextElementSibling, spollerSpeed);
-                }));
-            }));
-        }
-    }
-    function tabs() {
-        const tabs = document.querySelectorAll("[data-tabs]");
-        let tabsActiveHash = [];
-        if (tabs.length > 0) {
-            const hash = getHash();
-            if (hash && hash.startsWith("tab-")) tabsActiveHash = hash.replace("tab-", "").split("-");
-            tabs.forEach(((tabsBlock, index) => {
-                tabsBlock.classList.add("_tab-init");
-                tabsBlock.setAttribute("data-tabs-index", index);
-                tabsBlock.addEventListener("click", setTabsAction);
-                initTabs(tabsBlock);
-            }));
-            let mdQueriesArray = dataMediaQueries(tabs, "tabs");
-            if (mdQueriesArray && mdQueriesArray.length) mdQueriesArray.forEach((mdQueriesItem => {
-                mdQueriesItem.matchMedia.addEventListener("change", (function () {
-                    setTitlePosition(mdQueriesItem.itemsArray, mdQueriesItem.matchMedia);
-                }));
-                setTitlePosition(mdQueriesItem.itemsArray, mdQueriesItem.matchMedia);
-            }));
-        }
-        function setTitlePosition(tabsMediaArray, matchMedia) {
-            tabsMediaArray.forEach((tabsMediaItem => {
-                tabsMediaItem = tabsMediaItem.item;
-                let tabsTitles = tabsMediaItem.querySelector("[data-tabs-titles]");
-                let tabsTitleItems = tabsMediaItem.querySelectorAll("[data-tabs-title]");
-                let tabsContent = tabsMediaItem.querySelector("[data-tabs-body]");
-                let tabsContentItems = tabsMediaItem.querySelectorAll("[data-tabs-item]");
-                tabsTitleItems = Array.from(tabsTitleItems).filter((item => item.closest("[data-tabs]") === tabsMediaItem));
-                tabsContentItems = Array.from(tabsContentItems).filter((item => item.closest("[data-tabs]") === tabsMediaItem));
-                tabsContentItems.forEach(((tabsContentItem, index) => {
-                    if (matchMedia.matches) {
-                        tabsContent.append(tabsTitleItems[index]);
-                        tabsContent.append(tabsContentItem);
-                        tabsMediaItem.classList.add("_tab-spoller");
-                    } else {
-                        tabsTitles.append(tabsTitleItems[index]);
-                        tabsMediaItem.classList.remove("_tab-spoller");
-                    }
-                }));
-            }));
-        }
-        function initTabs(tabsBlock) {
-            let tabsTitles = tabsBlock.querySelectorAll("[data-tabs-titles]>*");
-            let tabsContent = tabsBlock.querySelectorAll("[data-tabs-body]>*");
-            const tabsBlockIndex = tabsBlock.dataset.tabsIndex;
-            const tabsActiveHashBlock = tabsActiveHash[0] == tabsBlockIndex;
-            if (tabsActiveHashBlock) {
-                const tabsActiveTitle = tabsBlock.querySelector("[data-tabs-titles]>._tab-active");
-                tabsActiveTitle ? tabsActiveTitle.classList.remove("_tab-active") : null;
-            }
-            if (tabsContent.length) {
-                tabsContent = Array.from(tabsContent).filter((item => item.closest("[data-tabs]") === tabsBlock));
-                tabsTitles = Array.from(tabsTitles).filter((item => item.closest("[data-tabs]") === tabsBlock));
-                tabsContent.forEach(((tabsContentItem, index) => {
-                    tabsTitles[index].setAttribute("data-tabs-title", "");
-                    tabsContentItem.setAttribute("data-tabs-item", "");
-                    if (tabsActiveHashBlock && index == tabsActiveHash[1]) tabsTitles[index].classList.add("_tab-active");
-                    tabsContentItem.hidden = !tabsTitles[index].classList.contains("_tab-active");
-                }));
-            }
-        }
-        function setTabsStatus(tabsBlock) {
-            let tabsTitles = tabsBlock.querySelectorAll("[data-tabs-title]");
-            let tabsContent = tabsBlock.querySelectorAll("[data-tabs-item]");
-            const tabsBlockIndex = tabsBlock.dataset.tabsIndex;
-            function isTabsAnamate(tabsBlock) {
-                if (tabsBlock.hasAttribute("data-tabs-animate")) return tabsBlock.dataset.tabsAnimate > 0 ? Number(tabsBlock.dataset.tabsAnimate) : 500;
-            }
-            const tabsBlockAnimate = isTabsAnamate(tabsBlock);
-            if (tabsContent.length > 0) {
-                const isHash = tabsBlock.hasAttribute("data-tabs-hash");
-                tabsContent = Array.from(tabsContent).filter((item => item.closest("[data-tabs]") === tabsBlock));
-                tabsTitles = Array.from(tabsTitles).filter((item => item.closest("[data-tabs]") === tabsBlock));
-                tabsContent.forEach(((tabsContentItem, index) => {
-                    if (tabsTitles[index].classList.contains("_tab-active")) {
-                        if (tabsBlockAnimate) _slideDown(tabsContentItem, tabsBlockAnimate); else tabsContentItem.hidden = false;
-                        if (isHash && !tabsContentItem.closest(".popup")) setHash(`tab-${tabsBlockIndex}-${index}`);
-                    } else if (tabsBlockAnimate) _slideUp(tabsContentItem, tabsBlockAnimate); else tabsContentItem.hidden = true;
-                }));
-            }
-        }
-        function setTabsAction(e) {
-            const el = e.target;
-            if (el.closest("[data-tabs-title]")) {
-                const tabTitle = el.closest("[data-tabs-title]");
-                const tabsBlock = tabTitle.closest("[data-tabs]");
-                if (!tabTitle.classList.contains("_tab-active") && !tabsBlock.querySelector("._slide")) {
-                    let tabActiveTitle = tabsBlock.querySelectorAll("[data-tabs-title]._tab-active");
-                    tabActiveTitle.length ? tabActiveTitle = Array.from(tabActiveTitle).filter((item => item.closest("[data-tabs]") === tabsBlock)) : null;
-                    tabActiveTitle.length ? tabActiveTitle[0].classList.remove("_tab-active") : null;
-                    tabTitle.classList.add("_tab-active");
-                    setTabsStatus(tabsBlock);
-                }
-                e.preventDefault();
-            }
-        }
-    }
-    function menuInit() {
-        if (document.querySelector(".icon-menu")) document.addEventListener("click", (function (e) {
-            if (e.target.closest(".icon-menu")) document.documentElement.classList.toggle("menu-open");
-        }));
-    }
-    function menuClose() {
-        document.documentElement.classList.remove("menu-open");
-    }
-    function showMore() {
-        window.addEventListener("load", (function (e) {
-            const showMoreBlocks = document.querySelectorAll("[data-showmore]");
-            let showMoreBlocksRegular;
-            let mdQueriesArray;
-            if (showMoreBlocks.length) {
-                showMoreBlocksRegular = Array.from(showMoreBlocks).filter((function (item, index, self) {
-                    return !item.dataset.showmoreMedia;
-                }));
-                showMoreBlocksRegular.length ? initItems(showMoreBlocksRegular) : null;
-                document.addEventListener("click", showMoreActions);
-                window.addEventListener("resize", showMoreActions);
-                mdQueriesArray = dataMediaQueries(showMoreBlocks, "showmoreMedia");
-                if (mdQueriesArray && mdQueriesArray.length) {
-                    mdQueriesArray.forEach((mdQueriesItem => {
-                        mdQueriesItem.matchMedia.addEventListener("change", (function () {
-                            initItems(mdQueriesItem.itemsArray, mdQueriesItem.matchMedia);
-                        }));
-                    }));
-                    initItemsMedia(mdQueriesArray);
-                }
-            }
-            function initItemsMedia(mdQueriesArray) {
-                mdQueriesArray.forEach((mdQueriesItem => {
-                    initItems(mdQueriesItem.itemsArray, mdQueriesItem.matchMedia);
-                }));
-            }
-            function initItems(showMoreBlocks, matchMedia) {
-                showMoreBlocks.forEach((showMoreBlock => {
-                    initItem(showMoreBlock, matchMedia);
-                }));
-            }
-            function initItem(showMoreBlock, matchMedia = false) {
-                showMoreBlock = matchMedia ? showMoreBlock.item : showMoreBlock;
-                let showMoreContent = showMoreBlock.querySelectorAll("[data-showmore-content]");
-                let showMoreButton = showMoreBlock.querySelectorAll("[data-showmore-button]");
-                showMoreContent = Array.from(showMoreContent).filter((item => item.closest("[data-showmore]") === showMoreBlock))[0];
-                showMoreButton = Array.from(showMoreButton).filter((item => item.closest("[data-showmore]") === showMoreBlock))[0];
-                const hiddenHeight = getHeight(showMoreBlock, showMoreContent);
-                if (matchMedia.matches || !matchMedia) if (hiddenHeight < getOriginalHeight(showMoreContent)) {
-                    _slideUp(showMoreContent, 0, hiddenHeight);
-                    showMoreButton.hidden = false;
-                } else {
-                    _slideDown(showMoreContent, 0, hiddenHeight);
-                    showMoreButton.hidden = true;
-                } else {
-                    _slideDown(showMoreContent, 0, hiddenHeight);
-                    showMoreButton.hidden = true;
-                }
-            }
-            function getHeight(showMoreBlock, showMoreContent) {
-                let hiddenHeight = 0;
-                const showMoreType = showMoreBlock.dataset.showmore ? showMoreBlock.dataset.showmore : "size";
-                if ("items" === showMoreType) {
-                    const showMoreTypeValue = showMoreContent.dataset.showmoreContent ? showMoreContent.dataset.showmoreContent : 3;
-                    const showMoreItems = showMoreContent.children;
-                    for (let index = 1; index < showMoreItems.length; index++) {
-                        const showMoreItem = showMoreItems[index - 1];
-                        hiddenHeight += showMoreItem.offsetHeight;
-                        if (index == showMoreTypeValue) break;
-                    }
-                } else {
-                    const showMoreTypeValue = showMoreContent.dataset.showmoreContent ? showMoreContent.dataset.showmoreContent : 150;
-                    hiddenHeight = showMoreTypeValue;
-                }
-                return hiddenHeight;
-            }
-            function getOriginalHeight(showMoreContent) {
-                let parentHidden;
-                let hiddenHeight = showMoreContent.offsetHeight;
-                showMoreContent.style.removeProperty("height");
-                if (showMoreContent.closest(`[hidden]`)) {
-                    parentHidden = showMoreContent.closest(`[hidden]`);
-                    parentHidden.hidden = false;
-                }
-                let originalHeight = showMoreContent.offsetHeight;
-                parentHidden ? parentHidden.hidden = true : null;
-                showMoreContent.style.height = `${hiddenHeight}px`;
-                return originalHeight;
-            }
-            function showMoreActions(e) {
-                const targetEvent = e.target;
-                const targetType = e.type;
-                if ("click" === targetType) {
-                    if (targetEvent.closest("[data-showmore-button]")) {
-                        const showMoreButton = targetEvent.closest("[data-showmore-button]");
-                        const showMoreBlock = showMoreButton.closest("[data-showmore]");
-                        const showMoreContent = showMoreBlock.querySelector("[data-showmore-content]");
-                        const showMoreSpeed = showMoreBlock.dataset.showmoreButton ? showMoreBlock.dataset.showmoreButton : "500";
-                        const hiddenHeight = getHeight(showMoreBlock, showMoreContent);
-                        if (!showMoreContent.classList.contains("_slide")) {
-                            showMoreBlock.classList.contains("_showmore-active") ? _slideUp(showMoreContent, showMoreSpeed, hiddenHeight) : _slideDown(showMoreContent, showMoreSpeed, hiddenHeight);
-                            showMoreBlock.classList.toggle("_showmore-active");
-                        }
-                    }
-                } else if ("resize" === targetType) {
-                    showMoreBlocksRegular && showMoreBlocksRegular.length ? initItems(showMoreBlocksRegular) : null;
-                    mdQueriesArray && mdQueriesArray.length ? initItemsMedia(mdQueriesArray) : null;
-                }
-            }
-        }));
-    }
-    function functions_FLS(message) {
-        setTimeout((() => {
-            if (window.FLS) console.log(message);
-        }), 0);
-    }
-    function uniqArray(array) {
-        return array.filter((function (item, index, self) {
-            return self.indexOf(item) === index;
-        }));
-    }
-    function dataMediaQueries(array, dataSetValue) {
-        const media = Array.from(array).filter((function (item, index, self) {
-            if (item.dataset[dataSetValue]) return item.dataset[dataSetValue].split(",")[0];
-        }));
-        if (media.length) {
-            const breakpointsArray = [];
-            media.forEach((item => {
-                const params = item.dataset[dataSetValue];
-                const breakpoint = {};
-                const paramsArray = params.split(",");
-                breakpoint.value = paramsArray[0];
-                breakpoint.type = paramsArray[1] ? paramsArray[1].trim() : "max";
-                breakpoint.item = item;
-                breakpointsArray.push(breakpoint);
-            }));
-            let mdQueries = breakpointsArray.map((function (item) {
-                return "(" + item.type + "-width: " + item.value + "px)," + item.value + "," + item.type;
-            }));
-            mdQueries = uniqArray(mdQueries);
-            const mdQueriesArray = [];
-            if (mdQueries.length) {
-                mdQueries.forEach((breakpoint => {
-                    const paramsArray = breakpoint.split(",");
-                    const mediaBreakpoint = paramsArray[1];
-                    const mediaType = paramsArray[2];
-                    const matchMedia = window.matchMedia(paramsArray[0]);
-                    const itemsArray = breakpointsArray.filter((function (item) {
-                        if (item.value === mediaBreakpoint && item.type === mediaType) return true;
-                    }));
-                    mdQueriesArray.push({
-                        itemsArray,
-                        matchMedia
-                    });
-                }));
-                return mdQueriesArray;
-            }
-        }
-    }
-    class Popup {
-        constructor(options) {
-            let config = {
-                logging: true,
-                init: true,
-                attributeOpenButton: "data-popup",
-                attributeCloseButton: "data-close",
-                fixElementSelector: "[data-lp]",
-                youtubeAttribute: "data-popup-youtube",
-                youtubePlaceAttribute: "data-popup-youtube-place",
-                setAutoplayYoutube: true,
-                classes: {
-                    popup: "popup",
-                    popupContent: "popup__content",
-                    popupActive: "popup_show",
-                    bodyActive: "popup-show"
-                },
-                focusCatch: true,
-                closeEsc: true,
-                bodyLock: true,
-                hashSettings: {
-                    location: true,
-                    goHash: true
-                },
-                on: {
-                    beforeOpen: function () { },
-                    afterOpen: function () { },
-                    beforeClose: function () { },
-                    afterClose: function () { }
-                }
-            };
-            this.youTubeCode;
-            this.isOpen = false;
-            this.targetOpen = {
-                selector: false,
-                element: false
-            };
-            this.previousOpen = {
-                selector: false,
-                element: false
-            };
-            this.lastClosed = {
-                selector: false,
-                element: false
-            };
-            this._dataValue = false;
-            this.hash = false;
-            this._reopen = false;
-            this._selectorOpen = false;
-            this.lastFocusEl = false;
-            this._focusEl = ["a[href]", 'input:not([disabled]):not([type="hidden"]):not([aria-hidden])', "button:not([disabled]):not([aria-hidden])", "select:not([disabled]):not([aria-hidden])", "textarea:not([disabled]):not([aria-hidden])", "area[href]", "iframe", "object", "embed", "[contenteditable]", '[tabindex]:not([tabindex^="-"])'];
-            this.options = {
-                ...config,
-                ...options,
-                classes: {
-                    ...config.classes,
-                    ...options?.classes
-                },
-                hashSettings: {
-                    ...config.hashSettings,
-                    ...options?.hashSettings
-                },
-                on: {
-                    ...config.on,
-                    ...options?.on
-                }
-            };
-            this.bodyLock = false;
-            this.options.init ? this.initPopups() : null;
-        }
-        initPopups() {
-            this.popupLogging(`Проснулся`);
-            this.eventsPopup();
-        }
-        eventsPopup() {
-            document.addEventListener("click", function (e) {
-                const buttonOpen = e.target.closest(`[${this.options.attributeOpenButton}]`);
-                if (buttonOpen) {
-                    e.preventDefault();
-                    this._dataValue = buttonOpen.getAttribute(this.options.attributeOpenButton) ? buttonOpen.getAttribute(this.options.attributeOpenButton) : "error";
-                    this.youTubeCode = buttonOpen.getAttribute(this.options.youtubeAttribute) ? buttonOpen.getAttribute(this.options.youtubeAttribute) : null;
-                    if ("error" !== this._dataValue) {
-                        if (!this.isOpen) this.lastFocusEl = buttonOpen;
-                        this.targetOpen.selector = `${this._dataValue}`;
-                        this._selectorOpen = true;
-                        this.open();
-                        return;
-                    } else this.popupLogging(`Ой ой, не заполнен атрибут у ${buttonOpen.classList}`);
-                    return;
-                }
-                const buttonClose = e.target.closest(`[${this.options.attributeCloseButton}]`);
-                if (buttonClose || !e.target.closest(`.${this.options.classes.popupContent}`) && this.isOpen) {
-                    e.preventDefault();
-                    this.close();
-                    return;
-                }
-            }.bind(this));
-            document.addEventListener("keydown", function (e) {
-                if (this.options.closeEsc && 27 == e.which && "Escape" === e.code && this.isOpen) {
-                    e.preventDefault();
-                    this.close();
-                    return;
-                }
-                if (this.options.focusCatch && 9 == e.which && this.isOpen) {
-                    this._focusCatch(e);
-                    return;
-                }
-            }.bind(this));
-            if (this.options.hashSettings.goHash) {
-                window.addEventListener("hashchange", function () {
-                    if (window.location.hash) this._openToHash(); else this.close(this.targetOpen.selector);
-                }.bind(this));
-                window.addEventListener("load", function () {
-                    if (window.location.hash) this._openToHash();
-                }.bind(this));
-            }
-        }
-        open(selectorValue) {
-            if (bodyLockStatus) {
-                this.bodyLock = document.documentElement.classList.contains("lock") ? true : false;
-                if (selectorValue && "string" === typeof selectorValue && "" !== selectorValue.trim()) {
-                    this.targetOpen.selector = selectorValue;
-                    this._selectorOpen = true;
-                }
-                if (this.isOpen) {
-                    this._reopen = true;
-                    this.close();
-                }
-                if (!this._selectorOpen) this.targetOpen.selector = this.lastClosed.selector;
-                if (!this._reopen) this.previousActiveElement = document.activeElement;
-                this.targetOpen.element = document.querySelector(this.targetOpen.selector);
-                if (this.targetOpen.element) {
-                    if (this.youTubeCode) {
-                        const codeVideo = this.youTubeCode;
-                        const urlVideo = `https://www.youtube.com/embed/${codeVideo}?rel=0&showinfo=0&autoplay=1`;
-                        const iframe = document.createElement("iframe");
-                        iframe.setAttribute("allowfullscreen", "");
-                        const autoplay = this.options.setAutoplayYoutube ? "autoplay;" : "";
-                        iframe.setAttribute("allow", `${autoplay}; encrypted-media`);
-                        iframe.setAttribute("src", urlVideo);
-                        if (!this.targetOpen.element.querySelector(`[${this.options.youtubePlaceAttribute}]`)) {
-                            this.targetOpen.element.querySelector(".popup__text").setAttribute(`${this.options.youtubePlaceAttribute}`, "");
-                        }
-                        this.targetOpen.element.querySelector(`[${this.options.youtubePlaceAttribute}]`).appendChild(iframe);
-                    }
-                    if (this.options.hashSettings.location) {
-                        this._getHash();
-                        this._setHash();
-                    }
-                    this.options.on.beforeOpen(this);
-                    document.dispatchEvent(new CustomEvent("beforePopupOpen", {
-                        detail: {
-                            popup: this
-                        }
-                    }));
-                    this.targetOpen.element.classList.add(this.options.classes.popupActive);
-                    document.documentElement.classList.add(this.options.classes.bodyActive);
-                    if (!this._reopen) !this.bodyLock ? bodyLock() : null; else this._reopen = false;
-                    this.targetOpen.element.setAttribute("aria-hidden", "false");
-                    this.previousOpen.selector = this.targetOpen.selector;
-                    this.previousOpen.element = this.targetOpen.element;
-                    this._selectorOpen = false;
-                    this.isOpen = true;
-                    setTimeout((() => {
-                        this._focusTrap();
-                    }), 50);
-                    this.options.on.afterOpen(this);
-                    document.dispatchEvent(new CustomEvent("afterPopupOpen", {
-                        detail: {
-                            popup: this
-                        }
-                    }));
-                    this.popupLogging(`Открыл попап`);
-                } else this.popupLogging(`Ой ой, такого попапа нет.Проверьте корректность ввода. `);
-            }
-        }
-        close(selectorValue) {
-            if (selectorValue && "string" === typeof selectorValue && "" !== selectorValue.trim()) this.previousOpen.selector = selectorValue;
-            if (!this.isOpen || !bodyLockStatus) return;
-            this.options.on.beforeClose(this);
-            document.dispatchEvent(new CustomEvent("beforePopupClose", {
-                detail: {
-                    popup: this
-                }
-            }));
-            if (this.youTubeCode) if (this.targetOpen.element.querySelector(`[${this.options.youtubePlaceAttribute}]`)) this.targetOpen.element.querySelector(`[${this.options.youtubePlaceAttribute}]`).innerHTML = "";
-            this.previousOpen.element.classList.remove(this.options.classes.popupActive);
-            this.previousOpen.element.setAttribute("aria-hidden", "true");
-            if (!this._reopen) {
-                document.documentElement.classList.remove(this.options.classes.bodyActive);
-                !this.bodyLock ? bodyUnlock() : null;
-                this.isOpen = false;
-            }
-            this._removeHash();
-            if (this._selectorOpen) {
-                this.lastClosed.selector = this.previousOpen.selector;
-                this.lastClosed.element = this.previousOpen.element;
-            }
-            this.options.on.afterClose(this);
-            document.dispatchEvent(new CustomEvent("afterPopupClose", {
-                detail: {
-                    popup: this
-                }
-            }));
-            setTimeout((() => {
-                this._focusTrap();
-            }), 50);
-            this.popupLogging(`Закрыл попап`);
-        }
-        _getHash() {
-            if (this.options.hashSettings.location) this.hash = this.targetOpen.selector.includes("#") ? this.targetOpen.selector : this.targetOpen.selector.replace(".", "#");
-        }
-        _openToHash() {
-            let classInHash = document.querySelector(`.${window.location.hash.replace("#", "")}`) ? `.${window.location.hash.replace("#", "")}` : document.querySelector(`${window.location.hash}`) ? `${window.location.hash}` : null;
-            const buttons = document.querySelector(`[${this.options.attributeOpenButton} = "${classInHash}"]`) ? document.querySelector(`[${this.options.attributeOpenButton} = "${classInHash}"]`) : document.querySelector(`[${this.options.attributeOpenButton} = "${classInHash.replace(".", "#")}"]`);
-            if (buttons && classInHash) this.open(classInHash);
-        }
-        _setHash() {
-            history.pushState("", "", this.hash);
-        }
-        _removeHash() {
-            history.pushState("", "", window.location.href.split("#")[0]);
-        }
-        _focusCatch(e) {
-            const focusable = this.targetOpen.element.querySelectorAll(this._focusEl);
-            const focusArray = Array.prototype.slice.call(focusable);
-            const focusedIndex = focusArray.indexOf(document.activeElement);
-            if (e.shiftKey && 0 === focusedIndex) {
-                focusArray[focusArray.length - 1].focus();
-                e.preventDefault();
-            }
-            if (!e.shiftKey && focusedIndex === focusArray.length - 1) {
-                focusArray[0].focus();
-                e.preventDefault();
-            }
-        }
-        _focusTrap() {
-            const focusable = this.previousOpen.element.querySelectorAll(this._focusEl);
-            if (!this.isOpen && this.lastFocusEl) this.lastFocusEl.focus(); else focusable[0].focus();
-        }
-        popupLogging(message) {
-            this.options.logging ? functions_FLS(`[Попапос]: ${message}`) : null;
-        }
-    }
-    modules_flsModules.popup = new Popup({});
-    let gotoblock_gotoBlock = (targetBlock, noHeader = false, speed = 500, offsetTop = 0) => {
-        const targetBlockElement = document.querySelector(targetBlock);
-        if (targetBlockElement) {
-            let headerItem = "";
-            let headerItemHeight = 0;
-            if (noHeader) {
-                headerItem = "header.header";
-                headerItemHeight = document.querySelector(headerItem).offsetHeight;
-            }
-            let options = {
-                speedAsDuration: true,
-                speed,
-                header: headerItem,
-                offset: offsetTop,
-                easing: "easeOutQuad"
-            };
-            document.documentElement.classList.contains("menu-open") ? menuClose() : null;
-            if ("undefined" !== typeof SmoothScroll) (new SmoothScroll).animateScroll(targetBlockElement, "", options); else {
-                let targetBlockElementPosition = targetBlockElement.getBoundingClientRect().top + scrollY;
-                targetBlockElementPosition = headerItemHeight ? targetBlockElementPosition - headerItemHeight : targetBlockElementPosition;
-                targetBlockElementPosition = offsetTop ? targetBlockElementPosition - offsetTop : targetBlockElementPosition;
-                window.scrollTo({
-                    top: targetBlockElementPosition,
-                    behavior: "smooth"
-                });
-            }
-            functions_FLS(`[gotoBlock]: Юхуу...едем к ${targetBlock}`);
-        } else functions_FLS(`[gotoBlock]: Ой ой..Такого блока нет на странице: ${targetBlock}`);
-    };
-    function formFieldsInit(options = {
-        viewPass: false
-    }) {
-        const formFields = document.querySelectorAll("input[placeholder],textarea[placeholder]");
-        if (formFields.length) formFields.forEach((formField => {
-            if (!formField.hasAttribute("data-placeholder-nohide")) formField.dataset.placeholder = formField.placeholder;
-        }));
-        document.body.addEventListener("focusin", (function (e) {
-            const targetElement = e.target;
-            if ("INPUT" === targetElement.tagName || "TEXTAREA" === targetElement.tagName) {
-                if (targetElement.dataset.placeholder) targetElement.placeholder = "";
-                if (!targetElement.hasAttribute("data-no-focus-classes")) {
-                    targetElement.classList.add("_form-focus");
-                    targetElement.parentElement.classList.add("_form-focus");
-                }
-                formValidate.removeError(targetElement);
-            }
-        }));
-        document.body.addEventListener("focusout", (function (e) {
-            const targetElement = e.target;
-            if ("INPUT" === targetElement.tagName || "TEXTAREA" === targetElement.tagName) {
-                if (targetElement.dataset.placeholder) targetElement.placeholder = targetElement.dataset.placeholder;
-                if (!targetElement.hasAttribute("data-no-focus-classes")) {
-                    targetElement.classList.remove("_form-focus");
-                    targetElement.parentElement.classList.remove("_form-focus");
-                }
-                if (targetElement.hasAttribute("data-validate")) formValidate.validateInput(targetElement);
-            }
-        }));
-        if (options.viewPass) document.addEventListener("click", (function (e) {
-            let targetElement = e.target;
-            if (targetElement.closest('[class*="__viewpass"]')) {
-                let inputType = targetElement.classList.contains("_viewpass-active") ? "password" : "text";
-                targetElement.parentElement.querySelector("input").setAttribute("type", inputType);
-                targetElement.classList.toggle("_viewpass-active");
-            }
-        }));
-    }
-    let formValidate = {
-        getErrors(form) {
-            let error = 0;
-            let formRequiredItems = form.querySelectorAll("*[data-required]");
-            if (formRequiredItems.length) formRequiredItems.forEach((formRequiredItem => {
-                if ((null !== formRequiredItem.offsetParent || "SELECT" === formRequiredItem.tagName) && !formRequiredItem.disabled) error += this.validateInput(formRequiredItem);
-            }));
-            return error;
-        },
-        validateInput(formRequiredItem) {
-            let error = 0;
-            if ("email" === formRequiredItem.dataset.required) {
-                formRequiredItem.value = formRequiredItem.value.replace(" ", "");
-                if (this.emailTest(formRequiredItem)) {
-                    this.addError(formRequiredItem);
-                    error++;
-                } else this.removeError(formRequiredItem);
-            } else if ("checkbox" === formRequiredItem.type && !formRequiredItem.checked) {
-                this.addError(formRequiredItem);
-                error++;
-            } else if (!formRequiredItem.value) {
-                this.addError(formRequiredItem);
-                error++;
-            } else this.removeError(formRequiredItem);
-            return error;
-        },
-        addError(formRequiredItem) {
-            formRequiredItem.classList.add("_form-error");
-            formRequiredItem.parentElement.classList.add("_form-error");
-            let inputError = formRequiredItem.parentElement.querySelector(".form__error");
-            if (inputError) formRequiredItem.parentElement.removeChild(inputError);
-            if (formRequiredItem.dataset.error) formRequiredItem.parentElement.insertAdjacentHTML("beforeend", `<div class="form__error">${formRequiredItem.dataset.error}</div>`);
-        },
-        removeError(formRequiredItem) {
-            formRequiredItem.classList.remove("_form-error");
-            formRequiredItem.parentElement.classList.remove("_form-error");
-            if (formRequiredItem.parentElement.querySelector(".form__error")) formRequiredItem.parentElement.removeChild(formRequiredItem.parentElement.querySelector(".form__error"));
-        },
-        formClean(form) {
-            form.reset();
-            setTimeout((() => {
-                let inputs = form.querySelectorAll("input,textarea");
-                for (let index = 0; index < inputs.length; index++) {
-                    const el = inputs[index];
-                    el.parentElement.classList.remove("_form-focus");
-                    el.classList.remove("_form-focus");
-                    formValidate.removeError(el);
-                }
-                let checkboxes = form.querySelectorAll(".checkbox__input");
-                if (checkboxes.length > 0) for (let index = 0; index < checkboxes.length; index++) {
-                    const checkbox = checkboxes[index];
-                    checkbox.checked = false;
-                }
-                if (modules_flsModules.select) {
-                    let selects = form.querySelectorAll(".select");
-                    if (selects.length) for (let index = 0; index < selects.length; index++) {
-                        const select = selects[index].querySelector("select");
-                        modules_flsModules.select.selectBuild(select);
-                    }
-                }
-            }), 0);
-        },
-        emailTest(formRequiredItem) {
-            return !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,8})+$/.test(formRequiredItem.value);
-        }
-    };
     function ssr_window_esm_isObject(obj) {
         return null !== obj && "object" === typeof obj && "constructor" in obj && obj.constructor === Object;
     }
@@ -846,10 +23,10 @@
     }
     const ssrDocument = {
         body: {},
-        addEventListener() { },
-        removeEventListener() { },
+        addEventListener() {},
+        removeEventListener() {},
         activeElement: {
-            blur() { },
+            blur() {},
             nodeName: ""
         },
         querySelector() {
@@ -863,7 +40,7 @@
         },
         createEvent() {
             return {
-                initEvent() { }
+                initEvent() {}
             };
         },
         createElement() {
@@ -871,7 +48,7 @@
                 children: [],
                 childNodes: [],
                 style: {},
-                setAttribute() { },
+                setAttribute() {},
                 getElementsByTagName() {
                     return [];
                 }
@@ -915,16 +92,16 @@
             search: ""
         },
         history: {
-            replaceState() { },
-            pushState() { },
-            go() { },
-            back() { }
+            replaceState() {},
+            pushState() {},
+            go() {},
+            back() {}
         },
         CustomEvent: function CustomEvent() {
             return this;
         },
-        addEventListener() { },
-        removeEventListener() { },
+        addEventListener() {},
+        removeEventListener() {},
         getComputedStyle() {
             return {
                 getPropertyValue() {
@@ -932,11 +109,11 @@
                 }
             };
         },
-        Image() { },
-        Date() { },
+        Image() {},
+        Date() {},
         screen: {},
-        setTimeout() { },
-        clearTimeout() { },
+        setTimeout() {},
+        clearTimeout() {},
         matchMedia() {
             return {};
         },
@@ -992,7 +169,7 @@
         return uniqueArray;
     }
     function qsa(selector, context) {
-        if ("string" !== typeof selector) return [selector];
+        if ("string" !== typeof selector) return [ selector ];
         const a = [];
         const res = context.querySelectorAll(selector);
         for (let i = 0; i < res.length; i += 1) a.push(res[i]);
@@ -1246,7 +423,7 @@
     function each(callback) {
         if (!callback) return this;
         this.forEach(((el, index) => {
-            callback.apply(el, [el, index]);
+            callback.apply(el, [ el, index ]);
         }));
         return this;
     }
@@ -1282,7 +459,7 @@
         if (selector === document) return el === document;
         if (selector === window) return el === window;
         if (selector.nodeType || selector instanceof Dom7) {
-            compareWith = selector.nodeType ? [selector] : selector;
+            compareWith = selector.nodeType ? [ selector ] : selector;
             for (i = 0; i < compareWith.length; i += 1) if (compareWith[i] === el) return true;
             return false;
         }
@@ -1305,9 +482,9 @@
         if (index < 0) {
             const returnIndex = length + index;
             if (returnIndex < 0) return dom7_esm_$([]);
-            return dom7_esm_$([this[returnIndex]]);
+            return dom7_esm_$([ this[returnIndex] ]);
         }
-        return dom7_esm_$([this[index]]);
+        return dom7_esm_$([ this[index] ]);
     }
     function append(...els) {
         let newChild;
@@ -1336,10 +513,10 @@
     function next(selector) {
         if (this.length > 0) {
             if (selector) {
-                if (this[0].nextElementSibling && dom7_esm_$(this[0].nextElementSibling).is(selector)) return dom7_esm_$([this[0].nextElementSibling]);
+                if (this[0].nextElementSibling && dom7_esm_$(this[0].nextElementSibling).is(selector)) return dom7_esm_$([ this[0].nextElementSibling ]);
                 return dom7_esm_$([]);
             }
-            if (this[0].nextElementSibling) return dom7_esm_$([this[0].nextElementSibling]);
+            if (this[0].nextElementSibling) return dom7_esm_$([ this[0].nextElementSibling ]);
             return dom7_esm_$([]);
         }
         return dom7_esm_$([]);
@@ -1361,10 +538,10 @@
         if (this.length > 0) {
             const el = this[0];
             if (selector) {
-                if (el.previousElementSibling && dom7_esm_$(el.previousElementSibling).is(selector)) return dom7_esm_$([el.previousElementSibling]);
+                if (el.previousElementSibling && dom7_esm_$(el.previousElementSibling).is(selector)) return dom7_esm_$([ el.previousElementSibling ]);
                 return dom7_esm_$([]);
             }
-            if (el.previousElementSibling) return dom7_esm_$([el.previousElementSibling]);
+            if (el.previousElementSibling) return dom7_esm_$([ el.previousElementSibling ]);
             return dom7_esm_$([]);
         }
         return dom7_esm_$([]);
@@ -1511,10 +688,10 @@
         Object.keys(object).forEach((key => {
             try {
                 object[key] = null;
-            } catch (e) { }
+            } catch (e) {}
             try {
                 delete object[key];
-            } catch (e) { }
+            } catch (e) {}
         }));
     }
     function utils_nextTick(callback, delay) {
@@ -1560,7 +737,7 @@
     }
     function utils_extend() {
         const to = Object(arguments.length <= 0 ? void 0 : arguments[0]);
-        const noExtend = ["__proto__", "constructor", "prototype"];
+        const noExtend = [ "__proto__", "constructor", "prototype" ];
         for (let i = 1; i < arguments.length; i += 1) {
             const nextSource = i < 0 || arguments.length <= i ? void 0 : arguments[i];
             if (void 0 !== nextSource && null !== nextSource && !isNode(nextSource)) {
@@ -1581,7 +758,7 @@
         el.style.setProperty(varName, varValue);
     }
     function animateCSSModeScroll(_ref) {
-        let { swiper, targetPosition, side } = _ref;
+        let {swiper, targetPosition, side} = _ref;
         const window = ssr_window_esm_getWindow();
         const startPosition = -swiper.translate;
         let startTime = null;
@@ -1633,7 +810,7 @@
                         }
                     });
                     window.addEventListener("testPassiveListener", null, opts);
-                } catch (e) { }
+                } catch (e) {}
                 return supportsPassive;
             }(),
             gestures: function checkGestures() {
@@ -1647,7 +824,7 @@
     }
     let deviceCached;
     function calcDevice(_temp) {
-        let { userAgent } = void 0 === _temp ? {} : _temp;
+        let {userAgent} = void 0 === _temp ? {} : _temp;
         const support = getSupport();
         const window = ssr_window_esm_getWindow();
         const platform = window.navigator.platform;
@@ -1664,10 +841,10 @@
         const iphone = !ipad && ua.match(/(iPhone\sOS|iOS)\s([\d_]+)/);
         const windows = "Win32" === platform;
         let macos = "MacIntel" === platform;
-        const iPadScreens = ["1024x1366", "1366x1024", "834x1194", "1194x834", "834x1112", "1112x834", "768x1024", "1024x768", "820x1180", "1180x820", "810x1080", "1080x810"];
+        const iPadScreens = [ "1024x1366", "1366x1024", "834x1194", "1194x834", "834x1112", "1112x834", "768x1024", "1024x768", "820x1180", "1180x820", "810x1080", "1080x810" ];
         if (!ipad && macos && support.touch && iPadScreens.indexOf(`${screenWidth}x${screenHeight}`) >= 0) {
             ipad = ua.match(/(Version)\/([\d.]+)/);
-            if (!ipad) ipad = [0, 1, "13_0_0"];
+            if (!ipad) ipad = [ 0, 1, "13_0_0" ];
             macos = false;
         }
         if (android && !windows) {
@@ -1702,7 +879,7 @@
         return browser;
     }
     function Resize(_ref) {
-        let { swiper, on, emit } = _ref;
+        let {swiper, on, emit} = _ref;
         const window = ssr_window_esm_getWindow();
         let observer = null;
         let animationFrame = null;
@@ -1715,11 +892,11 @@
             if (!swiper || swiper.destroyed || !swiper.initialized) return;
             observer = new ResizeObserver((entries => {
                 animationFrame = window.requestAnimationFrame((() => {
-                    const { width, height } = swiper;
+                    const {width, height} = swiper;
                     let newWidth = width;
                     let newHeight = height;
                     entries.forEach((_ref2 => {
-                        let { contentBoxSize, contentRect, target } = _ref2;
+                        let {contentBoxSize, contentRect, target} = _ref2;
                         if (target && target !== swiper.el) return;
                         newWidth = contentRect ? contentRect.width : (contentBoxSize[0] || contentBoxSize).inlineSize;
                         newHeight = contentRect ? contentRect.height : (contentBoxSize[0] || contentBoxSize).blockSize;
@@ -1755,10 +932,10 @@
         }));
     }
     function Observer(_ref) {
-        let { swiper, extendParams, on, emit } = _ref;
+        let {swiper, extendParams, on, emit} = _ref;
         const observers = [];
         const window = ssr_window_esm_getWindow();
-        const attach = function (target, options) {
+        const attach = function(target, options) {
             if (void 0 === options) options = {};
             const ObserverFunc = window.MutationObserver || window.WebkitMutationObserver;
             const observer = new ObserverFunc((mutations => {
@@ -1878,7 +1055,7 @@
             const eventsArray = Array.isArray(events) ? events : events.split(" ");
             eventsArray.forEach((event => {
                 if (self.eventsAnyListeners && self.eventsAnyListeners.length) self.eventsAnyListeners.forEach((eventHandler => {
-                    eventHandler.apply(context, [event, ...data]);
+                    eventHandler.apply(context, [ event, ...data ]);
                 }));
                 if (self.eventsListeners && self.eventsListeners[event]) self.eventsListeners[event].forEach((eventHandler => {
                     eventHandler.apply(context, data);
@@ -1924,7 +1101,7 @@
             return parseFloat(node.getPropertyValue(getDirectionLabel(label)) || 0);
         }
         const params = swiper.params;
-        const { $wrapperEl, size: swiperSize, rtlTranslate: rtl, wrongRTL } = swiper;
+        const {$wrapperEl, size: swiperSize, rtlTranslate: rtl, wrongRTL} = swiper;
         const isVirtual = swiper.virtual && params.virtual.enabled;
         const previousSlidesLength = isVirtual ? swiper.virtual.slides.length : swiper.slides.length;
         const slides = $wrapperEl.children(`.${swiper.params.slideClass}`);
@@ -1982,7 +1159,7 @@
                     const marginRight = getDirectionPropertyValue(slideStyles, "margin-right");
                     const boxSizing = slideStyles.getPropertyValue("box-sizing");
                     if (boxSizing && "border-box" === boxSizing) slideSize = width + marginLeft + marginRight; else {
-                        const { clientWidth, offsetWidth } = slide[0];
+                        const {clientWidth, offsetWidth} = slide[0];
                         slideSize = width + paddingLeft + paddingRight + marginLeft + marginRight + (offsetWidth - clientWidth);
                     }
                 }
@@ -2032,7 +1209,7 @@
             snapGrid = newSlidesGrid;
             if (Math.floor(swiper.virtualSize - swiperSize) - Math.floor(snapGrid[snapGrid.length - 1]) > 1) snapGrid.push(swiper.virtualSize - swiperSize);
         }
-        if (0 === snapGrid.length) snapGrid = [0];
+        if (0 === snapGrid.length) snapGrid = [ 0 ];
         if (0 !== params.spaceBetween) {
             const key = swiper.isHorizontal() && rtl ? "marginLeft" : getDirectionLabel("marginRight");
             slides.filter(((_, slideIndex) => {
@@ -2134,7 +1311,7 @@
         if (void 0 === translate) translate = this && this.translate || 0;
         const swiper = this;
         const params = swiper.params;
-        const { slides, rtlTranslate: rtl, snapGrid } = swiper;
+        const {slides, rtlTranslate: rtl, snapGrid} = swiper;
         if (0 === slides.length) return;
         if ("undefined" === typeof slides[0].swiperSlideOffset) swiper.updateSlidesOffset();
         let offsetCenter = -translate;
@@ -2169,7 +1346,7 @@
         }
         const params = swiper.params;
         const translatesDiff = swiper.maxTranslate() - swiper.minTranslate();
-        let { progress, isBeginning, isEnd } = swiper;
+        let {progress, isBeginning, isEnd} = swiper;
         const wasBeginning = isBeginning;
         const wasEnd = isEnd;
         if (0 === translatesDiff) {
@@ -2194,7 +1371,7 @@
     }
     function updateSlidesClasses() {
         const swiper = this;
-        const { slides, params, $wrapperEl, activeIndex, realIndex } = swiper;
+        const {slides, params, $wrapperEl, activeIndex, realIndex} = swiper;
         const isVirtual = swiper.virtual && params.virtual.enabled;
         slides.removeClass(`${params.slideActiveClass} ${params.slideNextClass} ${params.slidePrevClass} ${params.slideDuplicateActiveClass} ${params.slideDuplicateNextClass} ${params.slideDuplicatePrevClass}`);
         let activeSlide;
@@ -2220,7 +1397,7 @@
     function updateActiveIndex(newActiveIndex) {
         const swiper = this;
         const translate = swiper.rtlTranslate ? swiper.translate : -swiper.translate;
-        const { slidesGrid, snapGrid, params, activeIndex: previousIndex, realIndex: previousRealIndex, snapIndex: previousSnapIndex } = swiper;
+        const {slidesGrid, snapGrid, params, activeIndex: previousIndex, realIndex: previousRealIndex, snapIndex: previousSnapIndex} = swiper;
         let activeIndex = newActiveIndex;
         let snapIndex;
         if ("undefined" === typeof activeIndex) {
@@ -2288,7 +1465,7 @@
     function getSwiperTranslate(axis) {
         if (void 0 === axis) axis = this.isHorizontal() ? "x" : "y";
         const swiper = this;
-        const { params, rtlTranslate: rtl, translate, $wrapperEl } = swiper;
+        const {params, rtlTranslate: rtl, translate, $wrapperEl} = swiper;
         if (params.virtualTranslate) return rtl ? -translate : translate;
         if (params.cssMode) return translate;
         let currentTranslate = utils_getTranslate($wrapperEl[0], axis);
@@ -2297,7 +1474,7 @@
     }
     function setTranslate(translate, byController) {
         const swiper = this;
-        const { rtlTranslate: rtl, params, $wrapperEl, wrapperEl, progress } = swiper;
+        const {rtlTranslate: rtl, params, $wrapperEl, wrapperEl, progress} = swiper;
         let x = 0;
         let y = 0;
         const z = 0;
@@ -2327,7 +1504,7 @@
         if (void 0 === runCallbacks) runCallbacks = true;
         if (void 0 === translateBounds) translateBounds = true;
         const swiper = this;
-        const { params, wrapperEl } = swiper;
+        const {params, wrapperEl} = swiper;
         if (swiper.animating && params.preventInteractionOnTransition) return false;
         const minTranslate = swiper.minTranslate();
         const maxTranslate = swiper.maxTranslate();
@@ -2396,8 +1573,8 @@
         swiper.emit("setTransition", duration, byController);
     }
     function transitionEmit(_ref) {
-        let { swiper, runCallbacks, direction, step } = _ref;
-        const { activeIndex, previousIndex } = swiper;
+        let {swiper, runCallbacks, direction, step} = _ref;
+        const {activeIndex, previousIndex} = swiper;
         let dir = direction;
         if (!dir) if (activeIndex > previousIndex) dir = "next"; else if (activeIndex < previousIndex) dir = "prev"; else dir = "reset";
         swiper.emit(`transition${step}`);
@@ -2413,7 +1590,7 @@
     function transitionStart(runCallbacks, direction) {
         if (void 0 === runCallbacks) runCallbacks = true;
         const swiper = this;
-        const { params } = swiper;
+        const {params} = swiper;
         if (params.cssMode) return;
         if (params.autoHeight) swiper.updateAutoHeight();
         transitionEmit({
@@ -2426,7 +1603,7 @@
     function transitionEnd_transitionEnd(runCallbacks, direction) {
         if (void 0 === runCallbacks) runCallbacks = true;
         const swiper = this;
-        const { params } = swiper;
+        const {params} = swiper;
         swiper.animating = false;
         if (params.cssMode) return;
         swiper.setTransition(0);
@@ -2456,7 +1633,7 @@
         const swiper = this;
         let slideIndex = index;
         if (slideIndex < 0) slideIndex = 0;
-        const { params, snapGrid, slidesGrid, previousIndex, activeIndex, rtlTranslate: rtl, wrapperEl, enabled } = swiper;
+        const {params, snapGrid, slidesGrid, previousIndex, activeIndex, rtlTranslate: rtl, wrapperEl, enabled} = swiper;
         if (swiper.animating && params.preventInteractionOnTransition || !enabled && !internal && !initial) return false;
         const skip = Math.min(swiper.params.slidesPerGroupSkip, slideIndex);
         let snapIndex = skip + Math.floor((slideIndex - skip) / swiper.params.slidesPerGroup);
@@ -2560,7 +1737,7 @@
         if (void 0 === speed) speed = this.params.speed;
         if (void 0 === runCallbacks) runCallbacks = true;
         const swiper = this;
-        const { animating, enabled, params } = swiper;
+        const {animating, enabled, params} = swiper;
         if (!enabled) return swiper;
         let perGroup = params.slidesPerGroup;
         if ("auto" === params.slidesPerView && 1 === params.slidesPerGroup && params.slidesPerGroupAuto) perGroup = Math.max(swiper.slidesPerViewDynamic("current", true), 1);
@@ -2577,7 +1754,7 @@
         if (void 0 === speed) speed = this.params.speed;
         if (void 0 === runCallbacks) runCallbacks = true;
         const swiper = this;
-        const { params, animating, snapGrid, slidesGrid, rtlTranslate, enabled } = swiper;
+        const {params, animating, snapGrid, slidesGrid, rtlTranslate, enabled} = swiper;
         if (!enabled) return swiper;
         if (params.loop) {
             if (animating && params.loopPreventsSlide) return false;
@@ -2644,7 +1821,7 @@
     }
     function slideToClickedSlide() {
         const swiper = this;
-        const { params, $wrapperEl } = swiper;
+        const {params, $wrapperEl} = swiper;
         const slidesPerView = "auto" === params.slidesPerView ? swiper.slidesPerViewDynamic() : params.slidesPerView;
         let slideToIndex = swiper.clickedIndex;
         let realIndex;
@@ -2678,7 +1855,7 @@
     function loopCreate() {
         const swiper = this;
         const document = ssr_window_esm_getDocument();
-        const { params, $wrapperEl } = swiper;
+        const {params, $wrapperEl} = swiper;
         const $selector = $wrapperEl.children().length > 0 ? dom($wrapperEl.children()[0].parentNode) : $wrapperEl;
         $selector.children(`.${params.slideClass}.${params.slideDuplicateClass}`).remove();
         let slides = $selector.children(`.${params.slideClass}`);
@@ -2712,7 +1889,7 @@
     function loopFix() {
         const swiper = this;
         swiper.emit("beforeLoopFix");
-        const { activeIndex, slides, loopedSlides, allowSlidePrev, allowSlideNext, snapGrid, rtlTranslate: rtl } = swiper;
+        const {activeIndex, slides, loopedSlides, allowSlidePrev, allowSlideNext, snapGrid, rtlTranslate: rtl} = swiper;
         let newIndex;
         swiper.allowSlidePrev = true;
         swiper.allowSlideNext = true;
@@ -2735,7 +1912,7 @@
     }
     function loopDestroy() {
         const swiper = this;
-        const { $wrapperEl, params, slides } = swiper;
+        const {$wrapperEl, params, slides} = swiper;
         $wrapperEl.children(`.${params.slideClass}.${params.slideDuplicateClass},.${params.slideClass}.${params.slideBlankClass}`).remove();
         slides.removeAttr("data-swiper-slide-index");
     }
@@ -2776,7 +1953,7 @@
         const document = ssr_window_esm_getDocument();
         const window = ssr_window_esm_getWindow();
         const data = swiper.touchEventsData;
-        const { params, touches, enabled } = swiper;
+        const {params, touches, enabled} = swiper;
         if (!enabled) return;
         if (swiper.animating && params.preventInteractionOnTransition) return;
         if (!swiper.animating && params.cssMode && params.loop) swiper.loopFix();
@@ -2835,7 +2012,7 @@
         const document = ssr_window_esm_getDocument();
         const swiper = this;
         const data = swiper.touchEventsData;
-        const { params, touches, rtlTranslate: rtl, enabled } = swiper;
+        const {params, touches, rtlTranslate: rtl, enabled} = swiper;
         if (!enabled) return;
         let e = event;
         if (e.originalEvent) e = e.originalEvent;
@@ -2957,7 +2134,7 @@
     function onTouchEnd(event) {
         const swiper = this;
         const data = swiper.touchEventsData;
-        const { params, touches, rtlTranslate: rtl, slidesGrid, enabled } = swiper;
+        const {params, touches, rtlTranslate: rtl, slidesGrid, enabled} = swiper;
         if (!enabled) return;
         let e = event;
         if (e.originalEvent) e = e.originalEvent;
@@ -3040,10 +2217,10 @@
     }
     function onResize() {
         const swiper = this;
-        const { params, el } = swiper;
+        const {params, el} = swiper;
         if (el && 0 === el.offsetWidth) return;
         if (params.breakpoints) swiper.setBreakpoint();
-        const { allowSlideNext, allowSlidePrev, snapGrid } = swiper;
+        const {allowSlideNext, allowSlidePrev, snapGrid} = swiper;
         swiper.allowSlideNext = true;
         swiper.allowSlidePrev = true;
         swiper.updateSize();
@@ -3068,7 +2245,7 @@
     }
     function onScroll() {
         const swiper = this;
-        const { wrapperEl, rtlTranslate, enabled } = swiper;
+        const {wrapperEl, rtlTranslate, enabled} = swiper;
         if (!enabled) return;
         swiper.previousTranslate = swiper.translate;
         if (swiper.isHorizontal()) swiper.translate = -wrapperEl.scrollLeft; else swiper.translate = -wrapperEl.scrollTop;
@@ -3082,10 +2259,10 @@
         swiper.emit("setTranslate", swiper.translate, false);
     }
     let dummyEventAttached = false;
-    function dummyEventListener() { }
+    function dummyEventListener() {}
     const events = (swiper, method) => {
         const document = ssr_window_esm_getDocument();
-        const { params, touchEvents, el, wrapperEl, device, support } = swiper;
+        const {params, touchEvents, el, wrapperEl, device, support} = swiper;
         const capture = !!params.nested;
         const domMethod = "on" === method ? "addEventListener" : "removeEventListener";
         const swiperMethod = method;
@@ -3113,7 +2290,7 @@
     function attachEvents() {
         const swiper = this;
         const document = ssr_window_esm_getDocument();
-        const { params, support } = swiper;
+        const {params, support} = swiper;
         swiper.onTouchStart = onTouchStart.bind(swiper);
         swiper.onTouchMove = onTouchMove.bind(swiper);
         swiper.onTouchEnd = onTouchEnd.bind(swiper);
@@ -3136,7 +2313,7 @@
     const isGridEnabled = (swiper, params) => swiper.grid && params.grid && params.grid.rows > 1;
     function setBreakpoint() {
         const swiper = this;
-        const { activeIndex, initialized, loopedSlides = 0, params, $el } = swiper;
+        const {activeIndex, initialized, loopedSlides = 0, params, $el} = swiper;
         const breakpoints = params.breakpoints;
         if (!breakpoints || breakpoints && 0 === Object.keys(breakpoints).length) return;
         const breakpoint = swiper.getBreakpoint(breakpoints, swiper.params.breakpointsBase, swiper.el);
@@ -3154,7 +2331,7 @@
             if (breakpointParams.grid.fill && "column" === breakpointParams.grid.fill || !breakpointParams.grid.fill && "column" === params.grid.fill) $el.addClass(`${params.containerModifierClass}grid-column`);
             swiper.emitContainerClasses();
         }
-        ["navigation", "pagination", "scrollbar"].forEach((prop => {
+        [ "navigation", "pagination", "scrollbar" ].forEach((prop => {
             const wasModuleEnabled = params[prop] && params[prop].enabled;
             const isModuleEnabled = breakpointParams[prop] && breakpointParams[prop].enabled;
             if (wasModuleEnabled && !isModuleEnabled) swiper[prop].disable();
@@ -3203,7 +2380,7 @@
         }));
         points.sort(((a, b) => parseInt(a.value, 10) - parseInt(b.value, 10)));
         for (let i = 0; i < points.length; i += 1) {
-            const { point, value } = points[i];
+            const {point, value} = points[i];
             if ("window" === base) {
                 if (window.matchMedia(`(min-width: ${value}px)`).matches) breakpoint = point;
             } else if (value <= containerEl.clientWidth) breakpoint = point;
@@ -3225,37 +2402,37 @@
     }
     function addClasses() {
         const swiper = this;
-        const { classNames, params, rtl, $el, device, support } = swiper;
-        const suffixes = prepareClasses(["initialized", params.direction, {
+        const {classNames, params, rtl, $el, device, support} = swiper;
+        const suffixes = prepareClasses([ "initialized", params.direction, {
             "pointer-events": !support.touch
         }, {
-                "free-mode": swiper.params.freeMode && params.freeMode.enabled
-            }, {
-                autoheight: params.autoHeight
-            }, {
-                rtl
-            }, {
-                grid: params.grid && params.grid.rows > 1
-            }, {
-                "grid-column": params.grid && params.grid.rows > 1 && "column" === params.grid.fill
-            }, {
-                android: device.android
-            }, {
-                ios: device.ios
-            }, {
-                "css-mode": params.cssMode
-            }, {
-                centered: params.cssMode && params.centeredSlides
-            }, {
-                "watch-progress": params.watchSlidesProgress
-            }], params.containerModifierClass);
+            "free-mode": swiper.params.freeMode && params.freeMode.enabled
+        }, {
+            autoheight: params.autoHeight
+        }, {
+            rtl
+        }, {
+            grid: params.grid && params.grid.rows > 1
+        }, {
+            "grid-column": params.grid && params.grid.rows > 1 && "column" === params.grid.fill
+        }, {
+            android: device.android
+        }, {
+            ios: device.ios
+        }, {
+            "css-mode": params.cssMode
+        }, {
+            centered: params.cssMode && params.centeredSlides
+        }, {
+            "watch-progress": params.watchSlidesProgress
+        } ], params.containerModifierClass);
         classNames.push(...suffixes);
-        $el.addClass([...classNames].join(" "));
+        $el.addClass([ ...classNames ].join(" "));
         swiper.emitContainerClasses();
     }
     function removeClasses_removeClasses() {
         const swiper = this;
-        const { $el, classNames } = swiper;
+        const {$el, classNames} = swiper;
         $el.removeClass(classNames.join(" "));
         swiper.emitContainerClasses();
     }
@@ -3301,8 +2478,8 @@
     };
     function checkOverflow() {
         const swiper = this;
-        const { isLocked: wasLocked, params } = swiper;
-        const { slidesOffsetBefore } = params;
+        const {isLocked: wasLocked, params} = swiper;
+        const {slidesOffsetBefore} = params;
         if (slidesOffsetBefore) {
             const lastSlideIndex = swiper.slides.length - 1;
             const lastSlideRightEdge = swiper.slidesGrid[lastSlideIndex] + swiper.slidesSizesGrid[lastSlideIndex] + 2 * slidesOffsetBefore;
@@ -3418,7 +2595,7 @@
                 utils_extend(allModulesParams, obj);
                 return;
             }
-            if (["navigation", "pagination", "scrollbar"].indexOf(moduleParamName) >= 0 && true === params[moduleParamName]) params[moduleParamName] = {
+            if ([ "navigation", "pagination", "scrollbar" ].indexOf(moduleParamName) >= 0 && true === params[moduleParamName]) params[moduleParamName] = {
                 auto: true
             };
             if (!(moduleParamName in params && "enabled" in moduleParams)) {
@@ -3455,7 +2632,7 @@
             let el;
             let params;
             for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) args[_key] = arguments[_key];
-            if (1 === args.length && args[0].constructor && "Object" === Object.prototype.toString.call(args[0]).slice(8, -1)) params = args[0]; else[el, params] = args;
+            if (1 === args.length && args[0].constructor && "Object" === Object.prototype.toString.call(args[0]).slice(8, -1)) params = args[0]; else [el, params] = args;
             if (!params) params = {};
             params = utils_extend({}, params);
             if (el && !params.el) params.el = el;
@@ -3478,7 +2655,7 @@
             swiper.browser = getBrowser();
             swiper.eventsListeners = {};
             swiper.eventsAnyListeners = [];
-            swiper.modules = [...swiper.__modules__];
+            swiper.modules = [ ...swiper.__modules__ ];
             if (params.modules && Array.isArray(params.modules)) swiper.modules.push(...params.modules);
             const allModulesParams = {};
             swiper.modules.forEach((mod => {
@@ -3526,8 +2703,8 @@
                 allowSlideNext: swiper.params.allowSlideNext,
                 allowSlidePrev: swiper.params.allowSlidePrev,
                 touchEvents: function touchEvents() {
-                    const touch = ["touchstart", "touchmove", "touchend", "touchcancel"];
-                    const desktop = ["pointerdown", "pointermove", "pointerup"];
+                    const touch = [ "touchstart", "touchmove", "touchend", "touchcancel" ];
+                    const desktop = [ "pointerdown", "pointermove", "pointerup" ];
                     swiper.touchEventsTouch = {
                         start: touch[0],
                         move: touch[1],
@@ -3627,7 +2804,7 @@
             if (void 0 === view) view = "current";
             if (void 0 === exact) exact = false;
             const swiper = this;
-            const { params, slides, slidesGrid, slidesSizesGrid, size: swiperSize, activeIndex } = swiper;
+            const {params, slides, slidesGrid, slidesSizesGrid, size: swiperSize, activeIndex} = swiper;
             let spv = 1;
             if (params.centeredSlides) {
                 let slideSize = slides[activeIndex].swiperSlideSize;
@@ -3654,7 +2831,7 @@
         update() {
             const swiper = this;
             if (!swiper || swiper.destroyed) return;
-            const { snapGrid, params } = swiper;
+            const {snapGrid, params} = swiper;
             if (params.breakpoints) swiper.setBreakpoint();
             swiper.updateSize();
             swiper.updateSlides();
@@ -3773,7 +2950,7 @@
             if (void 0 === deleteInstance) deleteInstance = true;
             if (void 0 === cleanStyles) cleanStyles = true;
             const swiper = this;
-            const { params, $el, $wrapperEl, slides } = swiper;
+            const {params, $el, $wrapperEl, slides} = swiper;
             if ("undefined" === typeof swiper.params || swiper.destroyed) return null;
             swiper.emit("beforeDestroy");
             swiper.initialized = false;
@@ -3783,7 +2960,7 @@
                 swiper.removeClasses();
                 $el.removeAttr("style");
                 $wrapperEl.removeAttr("style");
-                if (slides && slides.length) slides.removeClass([params.slideVisibleClass, params.slideActiveClass, params.slideNextClass, params.slidePrevClass].join(" ")).removeAttr("style").removeAttr("data-swiper-slide-index");
+                if (slides && slides.length) slides.removeClass([ params.slideVisibleClass, params.slideActiveClass, params.slideNextClass, params.slidePrevClass ].join(" ")).removeAttr("style").removeAttr("data-swiper-slide-index");
             }
             swiper.emit("destroy");
             Object.keys(swiper.eventsListeners).forEach((eventName => {
@@ -3824,7 +3001,7 @@
             core_Swiper.prototype[protoMethod] = prototypes[prototypeGroup][protoMethod];
         }));
     }));
-    core_Swiper.use([Resize, Observer]);
+    core_Swiper.use([ Resize, Observer ]);
     const core = core_Swiper;
     function create_element_if_not_defined_createElementIfNotDefined(swiper, originalParams, params, checkProps) {
         const document = ssr_window_esm_getDocument();
@@ -3843,7 +3020,7 @@
         return params;
     }
     function Navigation(_ref) {
-        let { swiper, extendParams, on, emit } = _ref;
+        let {swiper, extendParams, on, emit} = _ref;
         extendParams({
             navigation: {
                 nextEl: null,
@@ -3879,7 +3056,7 @@
         }
         function update() {
             if (swiper.params.loop) return;
-            const { $nextEl, $prevEl } = swiper.navigation;
+            const {$nextEl, $prevEl} = swiper.navigation;
             toggleEl($prevEl, swiper.isBeginning && !swiper.params.rewind);
             toggleEl($nextEl, swiper.isEnd && !swiper.params.rewind);
         }
@@ -3918,7 +3095,7 @@
             }
         }
         function destroy() {
-            const { $nextEl, $prevEl } = swiper.navigation;
+            const {$nextEl, $prevEl} = swiper.navigation;
             if ($nextEl && $nextEl.length) {
                 $nextEl.off("click", onNextClick);
                 $nextEl.removeClass(swiper.params.navigation.disabledClass);
@@ -3941,12 +3118,12 @@
             destroy();
         }));
         on("enable disable", (() => {
-            const { $nextEl, $prevEl } = swiper.navigation;
+            const {$nextEl, $prevEl} = swiper.navigation;
             if ($nextEl) $nextEl[swiper.enabled ? "removeClass" : "addClass"](swiper.params.navigation.lockClass);
             if ($prevEl) $prevEl[swiper.enabled ? "removeClass" : "addClass"](swiper.params.navigation.lockClass);
         }));
         on("click", ((_s, e) => {
-            const { $nextEl, $prevEl } = swiper.navigation;
+            const {$nextEl, $prevEl} = swiper.navigation;
             const targetEl = e.target;
             if (swiper.params.navigation.hideOnClick && !dom(targetEl).is($prevEl) && !dom(targetEl).is($nextEl)) {
                 if (swiper.pagination && swiper.params.pagination && swiper.params.pagination.clickable && (swiper.pagination.el === targetEl || swiper.pagination.el.contains(targetEl))) return;
@@ -3979,7 +3156,7 @@
         return `.${classes.trim().replace(/([\.:!\/])/g, "\\$1").replace(/ /g, ".")}`;
     }
     function Pagination(_ref) {
-        let { swiper, extendParams, on, emit } = _ref;
+        let {swiper, extendParams, on, emit} = _ref;
         const pfx = "swiper-pagination";
         extendParams({
             pagination: {
@@ -4023,7 +3200,7 @@
             return !swiper.params.pagination.el || !swiper.pagination.el || !swiper.pagination.$el || 0 === swiper.pagination.$el.length;
         }
         function setSideBullets($bulletEl, position) {
-            const { bulletActiveClass } = swiper.params.pagination;
+            const {bulletActiveClass} = swiper.params.pagination;
             $bulletEl[position]().addClass(`${bulletActiveClass}-${position}`)[position]().addClass(`${bulletActiveClass}-${position}-${position}`);
         }
         function update() {
@@ -4056,7 +3233,7 @@
                     lastIndex = firstIndex + (Math.min(bullets.length, params.dynamicMainBullets) - 1);
                     midIndex = (lastIndex + firstIndex) / 2;
                 }
-                bullets.removeClass(["", "-next", "-next-next", "-prev", "-prev-prev", "-main"].map((suffix => `${params.bulletActiveClass}${suffix}`)).join(" "));
+                bullets.removeClass([ "", "-next", "-next-next", "-prev", "-prev-prev", "-main" ].map((suffix => `${params.bulletActiveClass}${suffix}`)).join(" "));
                 if ($el.length > 1) bullets.each((bullet => {
                     const $bullet = dom(bullet);
                     const bulletIndex = $bullet.index();
@@ -4210,7 +3387,7 @@
             destroy();
         }));
         on("enable disable", (() => {
-            const { $el } = swiper.pagination;
+            const {$el} = swiper.pagination;
             if ($el) $el[swiper.enabled ? "removeClass" : "addClass"](swiper.params.pagination.lockClass);
         }));
         on("lock unlock", (() => {
@@ -4218,7 +3395,7 @@
         }));
         on("click", ((_s, e) => {
             const targetEl = e.target;
-            const { $el } = swiper.pagination;
+            const {$el} = swiper.pagination;
             if (swiper.params.pagination.el && swiper.params.pagination.hideOnClick && $el && $el.length > 0 && !dom(targetEl).hasClass(swiper.params.pagination.bulletClass)) {
                 if (swiper.navigation && (swiper.navigation.nextEl && targetEl === swiper.navigation.nextEl || swiper.navigation.prevEl && targetEl === swiper.navigation.prevEl)) return;
                 const isHidden = $el.hasClass(swiper.params.pagination.hiddenClass);
@@ -4247,8 +3424,130 @@
             destroy
         });
     }
+    function Controller(_ref) {
+        let {swiper, extendParams, on} = _ref;
+        extendParams({
+            controller: {
+                control: void 0,
+                inverse: false,
+                by: "slide"
+            }
+        });
+        swiper.controller = {
+            control: void 0
+        };
+        function LinearSpline(x, y) {
+            const binarySearch = function search() {
+                let maxIndex;
+                let minIndex;
+                let guess;
+                return (array, val) => {
+                    minIndex = -1;
+                    maxIndex = array.length;
+                    while (maxIndex - minIndex > 1) {
+                        guess = maxIndex + minIndex >> 1;
+                        if (array[guess] <= val) minIndex = guess; else maxIndex = guess;
+                    }
+                    return maxIndex;
+                };
+            }();
+            this.x = x;
+            this.y = y;
+            this.lastIndex = x.length - 1;
+            let i1;
+            let i3;
+            this.interpolate = function interpolate(x2) {
+                if (!x2) return 0;
+                i3 = binarySearch(this.x, x2);
+                i1 = i3 - 1;
+                return (x2 - this.x[i1]) * (this.y[i3] - this.y[i1]) / (this.x[i3] - this.x[i1]) + this.y[i1];
+            };
+            return this;
+        }
+        function getInterpolateFunction(c) {
+            if (!swiper.controller.spline) swiper.controller.spline = swiper.params.loop ? new LinearSpline(swiper.slidesGrid, c.slidesGrid) : new LinearSpline(swiper.snapGrid, c.snapGrid);
+        }
+        function setTranslate(_t, byController) {
+            const controlled = swiper.controller.control;
+            let multiplier;
+            let controlledTranslate;
+            const Swiper = swiper.constructor;
+            function setControlledTranslate(c) {
+                const translate = swiper.rtlTranslate ? -swiper.translate : swiper.translate;
+                if ("slide" === swiper.params.controller.by) {
+                    getInterpolateFunction(c);
+                    controlledTranslate = -swiper.controller.spline.interpolate(-translate);
+                }
+                if (!controlledTranslate || "container" === swiper.params.controller.by) {
+                    multiplier = (c.maxTranslate() - c.minTranslate()) / (swiper.maxTranslate() - swiper.minTranslate());
+                    controlledTranslate = (translate - swiper.minTranslate()) * multiplier + c.minTranslate();
+                }
+                if (swiper.params.controller.inverse) controlledTranslate = c.maxTranslate() - controlledTranslate;
+                c.updateProgress(controlledTranslate);
+                c.setTranslate(controlledTranslate, swiper);
+                c.updateActiveIndex();
+                c.updateSlidesClasses();
+            }
+            if (Array.isArray(controlled)) {
+                for (let i = 0; i < controlled.length; i += 1) if (controlled[i] !== byController && controlled[i] instanceof Swiper) setControlledTranslate(controlled[i]);
+            } else if (controlled instanceof Swiper && byController !== controlled) setControlledTranslate(controlled);
+        }
+        function setTransition(duration, byController) {
+            const Swiper = swiper.constructor;
+            const controlled = swiper.controller.control;
+            let i;
+            function setControlledTransition(c) {
+                c.setTransition(duration, swiper);
+                if (0 !== duration) {
+                    c.transitionStart();
+                    if (c.params.autoHeight) utils_nextTick((() => {
+                        c.updateAutoHeight();
+                    }));
+                    c.$wrapperEl.transitionEnd((() => {
+                        if (!controlled) return;
+                        if (c.params.loop && "slide" === swiper.params.controller.by) c.loopFix();
+                        c.transitionEnd();
+                    }));
+                }
+            }
+            if (Array.isArray(controlled)) {
+                for (i = 0; i < controlled.length; i += 1) if (controlled[i] !== byController && controlled[i] instanceof Swiper) setControlledTransition(controlled[i]);
+            } else if (controlled instanceof Swiper && byController !== controlled) setControlledTransition(controlled);
+        }
+        function removeSpline() {
+            if (!swiper.controller.control) return;
+            if (swiper.controller.spline) {
+                swiper.controller.spline = void 0;
+                delete swiper.controller.spline;
+            }
+        }
+        on("beforeInit", (() => {
+            swiper.controller.control = swiper.params.controller.control;
+        }));
+        on("update", (() => {
+            removeSpline();
+        }));
+        on("resize", (() => {
+            removeSpline();
+        }));
+        on("observerUpdate", (() => {
+            removeSpline();
+        }));
+        on("setTranslate", ((_s, translate, byController) => {
+            if (!swiper.controller.control) return;
+            swiper.controller.setTranslate(translate, byController);
+        }));
+        on("setTransition", ((_s, duration, byController) => {
+            if (!swiper.controller.control) return;
+            swiper.controller.setTransition(duration, byController);
+        }));
+        Object.assign(swiper.controller, {
+            setTranslate,
+            setTransition
+        });
+    }
     function Autoplay(_ref) {
-        let { swiper, extendParams, on, emit } = _ref;
+        let {swiper, extendParams, on, emit} = _ref;
         let timeout;
         swiper.autoplay = {
             running: false,
@@ -4328,7 +3627,7 @@
             if (0 === speed || !swiper.params.autoplay.waitForTransition) {
                 swiper.autoplay.paused = false;
                 run();
-            } else["transitionend", "webkitTransitionEnd"].forEach((event => {
+            } else [ "transitionend", "webkitTransitionEnd" ].forEach((event => {
                 swiper.$wrapperEl[0].addEventListener(event, onTransitionEnd);
             }));
         }
@@ -4343,7 +3642,7 @@
         function onTransitionEnd(e) {
             if (!swiper || swiper.destroyed || !swiper.$wrapperEl) return;
             if (e.target !== swiper.$wrapperEl[0]) return;
-            ["transitionend", "webkitTransitionEnd"].forEach((event => {
+            [ "transitionend", "webkitTransitionEnd" ].forEach((event => {
                 swiper.$wrapperEl[0].removeEventListener(event, onTransitionEnd);
             }));
             swiper.autoplay.paused = false;
@@ -4354,7 +3653,7 @@
                 emit("autoplayPause");
                 pause();
             }
-            ["transitionend", "webkitTransitionEnd"].forEach((event => {
+            [ "transitionend", "webkitTransitionEnd" ].forEach((event => {
                 swiper.$wrapperEl[0].removeEventListener(event, onTransitionEnd);
             }));
         }
@@ -4404,366 +3703,175 @@
             stop
         });
     }
-    function initSliders() {
-        if (document.querySelector(".swiper")) new core(".swiper", {
-            modules: [Navigation, Pagination, Autoplay,],
-            observer: true,
-            observeParents: true,
-            slidesPerView: 3,
-            spaceBetween: 0,
-            autoHeight: true,
-            speed: 800,
-            lazy: true,
-            navigation: {
-                prevEl: ".swiper-button-prev",
-                nextEl: ".swiper-button-next"
-            },
-            breakpoints: {
-                320: {
-                    slidesPerView: 1.3,
-                    spaceBetween: 10
-                },
-                480: {
-                    slidesPerView: 2,
-                    spaceBetween: 20
-                },
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 20
-                },
-                992: {
-                    slidesPerView: 3,
-                    spaceBetween: 20
-                },
-                1268: {
-                    slidesPerView: 3,
-                    spaceBetween: 20
+    function effect_init_effectInit(params) {
+        const {effect, swiper, on, setTranslate, setTransition, overwriteParams, perspective, recreateShadows, getEffectParams} = params;
+        on("beforeInit", (() => {
+            if (swiper.params.effect !== effect) return;
+            swiper.classNames.push(`${swiper.params.containerModifierClass}${effect}`);
+            if (perspective && perspective()) swiper.classNames.push(`${swiper.params.containerModifierClass}3d`);
+            const overwriteParamsResult = overwriteParams ? overwriteParams() : {};
+            Object.assign(swiper.params, overwriteParamsResult);
+            Object.assign(swiper.originalParams, overwriteParamsResult);
+        }));
+        on("setTranslate", (() => {
+            if (swiper.params.effect !== effect) return;
+            setTranslate();
+        }));
+        on("setTransition", ((_s, duration) => {
+            if (swiper.params.effect !== effect) return;
+            setTransition(duration);
+        }));
+        on("transitionEnd", (() => {
+            if (swiper.params.effect !== effect) return;
+            if (recreateShadows) {
+                if (!getEffectParams || !getEffectParams().slideShadows) return;
+                swiper.slides.each((slideEl => {
+                    const $slideEl = swiper.$(slideEl);
+                    $slideEl.find(".swiper-slide-shadow-top, .swiper-slide-shadow-right, .swiper-slide-shadow-bottom, .swiper-slide-shadow-left").remove();
+                }));
+                recreateShadows();
+            }
+        }));
+        let requireUpdateOnVirtual;
+        on("virtualUpdate", (() => {
+            if (swiper.params.effect !== effect) return;
+            if (!swiper.slides.length) requireUpdateOnVirtual = true;
+            requestAnimationFrame((() => {
+                if (requireUpdateOnVirtual && swiper.slides && swiper.slides.length) {
+                    setTranslate();
+                    requireUpdateOnVirtual = false;
                 }
-            },
-            on: {}
+            }));
+        }));
+    }
+    function effect_target_effectTarget(effectParams, $slideEl) {
+        if (effectParams.transformEl) return $slideEl.find(effectParams.transformEl).css({
+            "backface-visibility": "hidden",
+            "-webkit-backface-visibility": "hidden"
         });
-        if (document.querySelector(".swiperg")) {
-            new core(".swiperg", {
-                modules: [Navigation, Pagination, Autoplay,],
+        return $slideEl;
+    }
+    function effect_virtual_transition_end_effectVirtualTransitionEnd(_ref) {
+        let {swiper, duration, transformEl, allSlides} = _ref;
+        const {slides, activeIndex, $wrapperEl} = swiper;
+        if (swiper.params.virtualTranslate && 0 !== duration) {
+            let eventTriggered = false;
+            let $transitionEndTarget;
+            if (allSlides) $transitionEndTarget = transformEl ? slides.find(transformEl) : slides; else $transitionEndTarget = transformEl ? slides.eq(activeIndex).find(transformEl) : slides.eq(activeIndex);
+            $transitionEndTarget.transitionEnd((() => {
+                if (eventTriggered) return;
+                if (!swiper || swiper.destroyed) return;
+                eventTriggered = true;
+                swiper.animating = false;
+                const triggerEvents = [ "webkitTransitionEnd", "transitionend" ];
+                for (let i = 0; i < triggerEvents.length; i += 1) $wrapperEl.trigger(triggerEvents[i]);
+            }));
+        }
+    }
+    function EffectFade(_ref) {
+        let {swiper, extendParams, on} = _ref;
+        extendParams({
+            fadeEffect: {
+                crossFade: false,
+                transformEl: null
+            }
+        });
+        const setTranslate = () => {
+            const {slides} = swiper;
+            const params = swiper.params.fadeEffect;
+            for (let i = 0; i < slides.length; i += 1) {
+                const $slideEl = swiper.slides.eq(i);
+                const offset = $slideEl[0].swiperSlideOffset;
+                let tx = -offset;
+                if (!swiper.params.virtualTranslate) tx -= swiper.translate;
+                let ty = 0;
+                if (!swiper.isHorizontal()) {
+                    ty = tx;
+                    tx = 0;
+                }
+                const slideOpacity = swiper.params.fadeEffect.crossFade ? Math.max(1 - Math.abs($slideEl[0].progress), 0) : 1 + Math.min(Math.max($slideEl[0].progress, -1), 0);
+                const $targetEl = effect_target_effectTarget(params, $slideEl);
+                $targetEl.css({
+                    opacity: slideOpacity
+                }).transform(`translate3d(${tx}px, ${ty}px, 0px)`);
+            }
+        };
+        const setTransition = duration => {
+            const {transformEl} = swiper.params.fadeEffect;
+            const $transitionElements = transformEl ? swiper.slides.find(transformEl) : swiper.slides;
+            $transitionElements.transition(duration);
+            effect_virtual_transition_end_effectVirtualTransitionEnd({
+                swiper,
+                duration,
+                transformEl,
+                allSlides: true
+            });
+        };
+        effect_init_effectInit({
+            effect: "fade",
+            swiper,
+            on,
+            setTranslate,
+            setTransition,
+            overwriteParams: () => ({
+                slidesPerView: 1,
+                slidesPerGroup: 1,
+                watchSlidesProgress: true,
+                spaceBetween: 0,
+                virtualTranslate: !swiper.params.cssMode
+            })
+        });
+    }
+    function initSliders() {
+        if (document.querySelector(".swiperinfo")) {
+            new core(".swiperinfo", {
+                modules: [ Navigation, Pagination, Autoplay, Controller, EffectFade ],
                 observer: true,
                 observeParents: true,
                 slidesPerView: 1,
-                spaceBetween: 20,
+                spaceBetween: 0,
                 autoHeight: false,
                 speed: 800,
                 loop: true,
-                lazy: true,
-                effect: 'fade',
+                effect: "fade",
                 autoplay: {
                     delay: 3e3,
                     disableOnInteraction: false
                 },
-                pagination: {
-                    el: ".swiper-pagination",
-                    clickable: true,
-                    type: "progressbar"
-                },
-
                 on: {}
             });
         }
-        if (document.querySelector(".swipertext")) {
-            new core(".swipertext", {
-                modules: [Autoplay],
+        if (document.querySelector(".swiperimage")) {
+            new core(".swiperimage", {
+                modules: [ Navigation, Pagination, Autoplay, Controller, EffectFade ],
                 observer: true,
                 observeParents: true,
                 slidesPerView: 1,
-                spaceBetween: 20,
+                spaceBetween: 0,
                 autoHeight: false,
                 speed: 800,
                 loop: true,
-                lazy: true,
+                effect: "fade",
                 autoplay: {
                     delay: 3e3,
                     disableOnInteraction: false
-                },
-
-
-                on: {}
-            });
-        }
-        if (document.querySelector(".swipercontent")) {
-            new core(".swipercontent", {
-                modules: [Autoplay,],
-                observer: true,
-                observeParents: true,
-                slidesPerView: 1,
-                spaceBetween: 20,
-                autoHeight: false,
-                speed: 800,
-                loop: true,
-                lazy: true,
-                autoplay: {
-                    delay: 3e3,
-                    disableOnInteraction: false
-                },
-                controller: {
-                    controll: ".swiperg"
                 },
                 on: {}
             });
         }
     }
-    window.addEventListener("load", (function (e) {
+    window.addEventListener("load", (function(e) {
         initSliders();
     }));
-
-
     let addWindowScrollEvent = false;
-    function pageNavigation() {
-        document.addEventListener("click", pageNavigationAction);
-        document.addEventListener("watcherCallback", pageNavigationAction);
-        function pageNavigationAction(e) {
-            if ("click" === e.type) {
-                const targetElement = e.target;
-                if (targetElement.closest("[data-goto]")) {
-                    const gotoLink = targetElement.closest("[data-goto]");
-                    const gotoLinkSelector = gotoLink.dataset.goto ? gotoLink.dataset.goto : "";
-                    const noHeader = gotoLink.hasAttribute("data-goto-header") ? true : false;
-                    const gotoSpeed = gotoLink.dataset.gotoSpeed ? gotoLink.dataset.gotoSpeed : 500;
-                    const offsetTop = gotoLink.dataset.gotoTop ? parseInt(gotoLink.dataset.gotoTop) : 0;
-                    gotoblock_gotoBlock(gotoLinkSelector, noHeader, gotoSpeed, offsetTop);
-                    e.preventDefault();
-                }
-            } else if ("watcherCallback" === e.type && e.detail) {
-                const entry = e.detail.entry;
-                const targetElement = entry.target;
-                if ("navigator" === targetElement.dataset.watch) {
-                    document.querySelector(`[data-goto]._navigator-active`);
-                    let navigatorCurrentItem;
-                    if (targetElement.id && document.querySelector(`[data-goto="#${targetElement.id}"]`)) navigatorCurrentItem = document.querySelector(`[data-goto="#${targetElement.id}"]`); else if (targetElement.classList.length) for (let index = 0; index < targetElement.classList.length; index++) {
-                        const element = targetElement.classList[index];
-                        if (document.querySelector(`[data-goto=".${element}"]`)) {
-                            navigatorCurrentItem = document.querySelector(`[data-goto=".${element}"]`);
-                            break;
-                        }
-                    }
-                    if (entry.isIntersecting) navigatorCurrentItem ? navigatorCurrentItem.classList.add("_navigator-active") : null; else navigatorCurrentItem ? navigatorCurrentItem.classList.remove("_navigator-active") : null;
-                }
-            }
-        }
-        if (getHash()) {
-            let goToHash;
-            if (document.querySelector(`#${getHash()}`)) goToHash = `#${getHash()}`; else if (document.querySelector(`.${getHash()}`)) goToHash = `.${getHash()}`;
-            goToHash ? gotoblock_gotoBlock(goToHash, true, 500, 20) : null;
-        }
-    }
-    function headerScroll() {
-        addWindowScrollEvent = true;
-        const header = document.querySelector('header.header');
-        const headerShow = header.hasAttribute('data-scroll-show');
-        const headerShowTimer = header.dataset.scrollShow ? header.dataset.scrollShow : 500;
-        const startPoint = header.dataset.scroll ? header.dataset.scroll : 1;
-        let scrollDirection = 0;
-        let timer;
-        document.addEventListener("windowScroll", function (e) {
-            const scrollTop = window.scrollY;
-            clearTimeout(timer);
-            if (scrollTop >= startPoint) {
-                !header.classList.contains('_header-scroll') ? header.classList.add('_header-scroll') : null;
-                if (headerShow) {
-                    if (scrollTop > scrollDirection) {
-                        // downscroll code
-                        header.classList.contains('_header-show') ? header.classList.remove('_header-show') : null;
-                    } else {
-                        // upscroll code
-                        !header.classList.contains('_header-show') ? header.classList.add('_header-show') : null;
-                    }
-                    timer = setTimeout(() => {
-                        !header.classList.contains('_header-show') ? header.classList.add('_header-show') : null;
-                    }, headerShowTimer);
-                }
-            } else {
-                header.classList.contains('_header-scroll') ? header.classList.remove('_header-scroll') : null;
-                if (headerShow) {
-                    header.classList.contains('_header-show') ? header.classList.remove('_header-show') : null;
-                }
-            }
-            scrollDirection = scrollTop <= 0 ? 0 : scrollTop;
-        });
-    }
     setTimeout((() => {
         if (addWindowScrollEvent) {
             let windowScroll = new Event("windowScroll");
-            window.addEventListener("scroll", (function (e) {
+            window.addEventListener("scroll", (function(e) {
                 document.dispatchEvent(windowScroll);
             }));
         }
     }), 0);
-    function DynamicAdapt(type) {
-        this.type = type;
-    }
-    DynamicAdapt.prototype.init = function () {
-        const _this = this;
-        this.оbjects = [];
-        this.daClassname = "_dynamic_adapt_";
-        this.nodes = document.querySelectorAll("[data-da]");
-        for (let i = 0; i < this.nodes.length; i++) {
-            const node = this.nodes[i];
-            const data = node.dataset.da.trim();
-            const dataArray = data.split(",");
-            const оbject = {};
-            оbject.element = node;
-            оbject.parent = node.parentNode;
-            оbject.destination = document.querySelector(dataArray[0].trim());
-            оbject.breakpoint = dataArray[1] ? dataArray[1].trim() : "767";
-            оbject.place = dataArray[2] ? dataArray[2].trim() : "last";
-            оbject.index = this.indexInParent(оbject.parent, оbject.element);
-            this.оbjects.push(оbject);
-        }
-        this.arraySort(this.оbjects);
-        this.mediaQueries = Array.prototype.map.call(this.оbjects, (function (item) {
-            return "(" + this.type + "-width: " + item.breakpoint + "px)," + item.breakpoint;
-        }), this);
-        this.mediaQueries = Array.prototype.filter.call(this.mediaQueries, (function (item, index, self) {
-            return Array.prototype.indexOf.call(self, item) === index;
-        }));
-        for (let i = 0; i < this.mediaQueries.length; i++) {
-            const media = this.mediaQueries[i];
-            const mediaSplit = String.prototype.split.call(media, ",");
-            const matchMedia = window.matchMedia(mediaSplit[0]);
-            const mediaBreakpoint = mediaSplit[1];
-            const оbjectsFilter = Array.prototype.filter.call(this.оbjects, (function (item) {
-                return item.breakpoint === mediaBreakpoint;
-            }));
-            matchMedia.addListener((function () {
-                _this.mediaHandler(matchMedia, оbjectsFilter);
-            }));
-            this.mediaHandler(matchMedia, оbjectsFilter);
-        }
-    };
-    DynamicAdapt.prototype.mediaHandler = function (matchMedia, оbjects) {
-        if (matchMedia.matches) for (let i = 0; i < оbjects.length; i++) {
-            const оbject = оbjects[i];
-            оbject.index = this.indexInParent(оbject.parent, оbject.element);
-            this.moveTo(оbject.place, оbject.element, оbject.destination);
-        } else for (let i = оbjects.length - 1; i >= 0; i--) {
-            const оbject = оbjects[i];
-            if (оbject.element.classList.contains(this.daClassname)) this.moveBack(оbject.parent, оbject.element, оbject.index);
-        }
-    };
-    DynamicAdapt.prototype.moveTo = function (place, element, destination) {
-        element.classList.add(this.daClassname);
-        if ("last" === place || place >= destination.children.length) {
-            destination.insertAdjacentElement("beforeend", element);
-            return;
-        }
-        if ("first" === place) {
-            destination.insertAdjacentElement("afterbegin", element);
-            return;
-        }
-        destination.children[place].insertAdjacentElement("beforebegin", element);
-    };
-    DynamicAdapt.prototype.moveBack = function (parent, element, index) {
-        element.classList.remove(this.daClassname);
-        if (void 0 !== parent.children[index]) parent.children[index].insertAdjacentElement("beforebegin", element); else parent.insertAdjacentElement("beforeend", element);
-    };
-    DynamicAdapt.prototype.indexInParent = function (parent, element) {
-        const array = Array.prototype.slice.call(parent.children);
-        return Array.prototype.indexOf.call(array, element);
-    };
-    DynamicAdapt.prototype.arraySort = function (arr) {
-        if ("min" === this.type) Array.prototype.sort.call(arr, (function (a, b) {
-            if (a.breakpoint === b.breakpoint) {
-                if (a.place === b.place) return 0;
-                if ("first" === a.place || "last" === b.place) return -1;
-                if ("last" === a.place || "first" === b.place) return 1;
-                return a.place - b.place;
-            }
-            return a.breakpoint - b.breakpoint;
-        })); else {
-            Array.prototype.sort.call(arr, (function (a, b) {
-                if (a.breakpoint === b.breakpoint) {
-                    if (a.place === b.place) return 0;
-                    if ("first" === a.place || "last" === b.place) return 1;
-                    if ("last" === a.place || "first" === b.place) return -1;
-                    return b.place - a.place;
-                }
-                return b.breakpoint - a.breakpoint;
-            }));
-            return;
-        }
-    };
-    const da = new DynamicAdapt("max");
-    da.init();
-    const occupationsImg1 = document.querySelector(".occupations__img1");
-    const occupationsImg2 = document.querySelector(".occupations__img2");
-    const occupationsImg3 = document.querySelector(".occupations__img3");
-    const occupationsItem1 = document.querySelector(".occupations__description_one");
-    const occupationsItem2 = document.querySelector(".occupations__description_two");
-    const occupationsItem3 = document.querySelector(".occupations__description_three");
-
-
-    let VideoOne = function startVideoOne() {
-        occupationsImg1.classList.add("show");
-        occupationsImg2.classList.remove("show");
-        occupationsImg3.classList.remove("show");
-
-        occupationsItem1.classList.add("occupations__active");
-        occupationsItem2.classList.remove("occupations__active");
-        occupationsItem3.classList.remove("occupations__active");
-        timerIdTwo();
-
-    }
-    let VideoTwo = function startVideoTwo() {
-        // clearInterval(timerIdOne);
-        occupationsImg1.classList.remove("show");
-        occupationsImg2.classList.add("show");
-        occupationsImg3.classList.remove("show");
-
-        occupationsItem2.classList.add("occupations__active");
-        occupationsItem1.classList.remove("occupations__active");
-        occupationsItem3.classList.remove("occupations__active");
-        timerIdThree();
-
-
-    }
-    let VideoThree = function startVideoThree() {
-        occupationsImg1.classList.remove("show");
-        occupationsImg2.classList.remove("show");
-        occupationsImg3.classList.add("show");
-
-        occupationsItem3.classList.add("occupations__active");
-        occupationsItem1.classList.remove("occupations__active");
-        occupationsItem2.classList.remove("occupations__active");
-        timerIdOne();
-    }
-    let timerIdOne = function () {
-        let timerOne = setTimeout(() => {
-            VideoOne()
-        }, 3000);
-    }
-    let timerIdTwo = function () {
-        let timerTwo = setTimeout(() => {
-            VideoTwo();
-        }, 7000);
-    }
-    let timerIdThree = function () {
-        let timerThree = setTimeout(() => {
-            VideoThree()
-        }, 9000);
-    }
-    timerIdTwo();
-
-
-
-
-
-
     window["FLS"] = true;
     isWebp();
-    menuInit();
-    spollers();
-    tabs();
-    showMore();
-    formFieldsInit({
-        viewPass: false
-    });
-    pageNavigation();
-    headerScroll();
 })();
